@@ -13,6 +13,7 @@ import productRoutes from "./routes/productRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import blogRoutes from "./routes/blogRoutes.js";
+import ticketRoutes from "./routes/ticketRoutes.js";
 
 // Load environment variables
 dotenv.config();
@@ -73,6 +74,7 @@ app.use("/api/products", productRoutes);
 app.use("/api/auth", userRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/blogs", blogRoutes);
+app.use("/api/tickets", ticketRoutes);
 
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "OK" });

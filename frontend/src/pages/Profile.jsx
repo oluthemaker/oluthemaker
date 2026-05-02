@@ -1,8 +1,16 @@
 import React, { useState, useEffect } from "react";
 import useUserStore from "../store/useUserStore";
 import useCartStore from "../store/useCartStore";
-import { User, History, Heart, LogOut, MapPin } from "lucide-react";
+import {
+  User,
+  History,
+  Heart,
+  LogOut,
+  MapPin,
+  MessageSquare,
+} from "lucide-react";
 import { atelierToast } from "../utils/Toaster";
+import UserTicketList from "../components/UserTicketList";
 
 const Profile = () => {
   const { user, logout, checkAuth, updateProfile } = useUserStore();
@@ -81,6 +89,11 @@ const Profile = () => {
               id: "orders",
               label: "Past Commissions",
               icon: <History size={16} strokeWidth={1.5} />,
+            },
+            {
+              id: "tickets",
+              label: "Concierge",
+              icon: <MessageSquare size={16} strokeWidth={1.5} />,
             },
             {
               id: "wishlist",
@@ -373,6 +386,13 @@ const Profile = () => {
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* --- CONCIERGE (TICKETS) --- */}
+          {activeTab === "tickets" && (
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <UserTicketList />
             </div>
           )}
         </div>

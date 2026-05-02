@@ -9,6 +9,7 @@ import { WelcomeEmail } from "../emails/WelcomeEmail.jsx";
 import { ResetPasswordEmail } from "../emails/ResetPasswordEmail.jsx";
 import { OrderConfirmedEmail } from "../emails/OrderConfirmedEmail.jsx";
 import PaymentReminderEmail from "../emails/PaymentReminderEmail.jsx";
+import { TicketResponseEmail } from "../emails/TicketResponseEmail.jsx";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM_EMAIL = "Olú The Maker <info@oluthemaker.com>";
@@ -43,6 +44,17 @@ export const sendEmail = async (type, to, data) => {
           orderId={data.orderId}
           totalPrice={data.totalPrice}
           paymentLink={data.paymentLink}
+        />
+      );
+      break;
+    case "TICKET_RESPONSE":
+      subject = "Correspondence Updated.";
+      component = (
+        <TicketResponseEmail
+          userName={data.userName}
+          subject={data.subject}
+          messageSnippet={data.messageSnippet}
+          ticketId={data.ticketId}
         />
       );
       break;

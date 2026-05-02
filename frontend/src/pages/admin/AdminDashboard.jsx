@@ -1,8 +1,15 @@
 import React, { useState } from "react";
 import AddProductForm from "../../components/admin/AdminProductForm";
-import { Package, Users, BarChart3, ClipboardList } from "lucide-react";
+import {
+  Package,
+  Users,
+  BarChart3,
+  ClipboardList,
+  ConciergeBell,
+} from "lucide-react";
 import AdminOrderList from "../../components/admin/AdminOrderList";
 import AdminUserList from "../../components/admin/AdminUserList";
+import AdminTicketList from "../../components/admin/AdminTicketList";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("products");
@@ -29,6 +36,11 @@ const AdminDashboard = () => {
               id: "analytics",
               label: "Revenue",
               icon: <BarChart3 size={16} />,
+            },
+            {
+              id: "tickets",
+              label: "Concierge",
+              icon: <ConciergeBell size={16} />,
             },
           ].map((item) => (
             <button
@@ -109,6 +121,21 @@ const AdminDashboard = () => {
                 Financial modeling in progress...
               </p>
             </div>
+          </div>
+        )}
+
+        {/* 5. TICKETS TAB */}
+        {activeTab === "tickets" && (
+          <div className="max-w-6xl animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <header className="mb-12">
+              <h2 className="text-4xl font-serif italic mb-2 text-atelier-ink">
+                Client Correspondence
+              </h2>
+              <p className="text-[10px] tracking-widest uppercase opacity-40">
+                Manage support inquiries and bespoke requests
+              </p>
+            </header>
+            <AdminTicketList />
           </div>
         )}
       </section>

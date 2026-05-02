@@ -65,7 +65,6 @@ function App() {
             <Route path="/reset-password/:token" element={<ResetPassword />} />
             <Route path="/payment/:orderId" element={<PaymentPage />} />
             {/* Add more routes as we build */}
-            //Footer Pages
             <Route path="/about" element={<About />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/faq" element={<FAQ />} />
