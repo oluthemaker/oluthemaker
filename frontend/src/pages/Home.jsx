@@ -82,9 +82,9 @@ const Home = () => {
       <section className="relative py-32 bg-atelier-ink text-white overflow-hidden">
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-24 items-center">
           {/* Left: Image Box */}
-          <div className="relative aspect-[4/5] w-full group">
+          <div className="relative aspect-[4/3] w-full group">
             <img
-              src="https://images.unsplash.com/photo-1616406432452-07bc5938759d"
+              src="https://res.cloudinary.com/ds78nckog/image/upload/v1778754634/moreimages_yhut1e.jpg"
               alt="Bespoke Shoemaking"
               className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-700"
             />

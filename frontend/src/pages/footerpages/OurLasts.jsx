@@ -1,16 +1,6 @@
-import React, { useState, useRef, useEffect } from "react";
-import {
-  motion,
-  AnimatePresence,
-  useMotionValue,
-  useTransform,
-} from "framer-motion";
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import useSEO from "../../hooks/useSEO";
-
-// Import your images
-import last1Bg from "../../assets/lasts/last1.png";
-import last2Bg from "../../assets/lasts/last2.png";
-import last3Bg from "../../assets/lasts/last3.png";
 
 const lastsData = [
   {
@@ -20,14 +10,15 @@ const lastsData = [
     description:
       "A timeless silhouette, balanced for the traditional gentleman.",
     modalContent:
-      "The Classic last is the foundation of the Olú collection. Designed for premium box calf leather, it features a generous toe box and a standard instep, making it the most versatile form for Oxfords and Derbies.",
+      "The Classic last is the foundation of the Olú collection. Designed for premium box calf leather, it features a generous toe box.",
     specs: {
       ToeShape: "Rounded",
       IntendedUse: "Formal / Dress",
       FitProfile: "Standard",
       Construction: "Traditional Hand-Welted",
     },
-    bg: last1Bg,
+    // Adjust these percentages to line up with the lasts on your shelf image
+    coords: { x: "10%", y: "45%" },
   },
   {
     id: "last2",
@@ -36,14 +27,14 @@ const lastsData = [
     description:
       "Engineered for movement, without sacrificing the atelier aesthetic.",
     modalContent:
-      "Form 002 is inspired by 1960s tennis silhouettes but built with dress shoe precision. It features a wider forefoot and a lowered heel drop for all-day comfort in more casual environments.",
+      "Form 002 is inspired by 1960s tennis silhouettes but built with dress shoe precision.",
     specs: {
       ToeShape: "Soft Square",
       IntendedUse: "Casual / Travel",
       FitProfile: "Wide",
       Construction: "Modern Bluberi",
     },
-    bg: last2Bg,
+    coords: { x: "42%", y: "42%" },
   },
   {
     id: "last3",
@@ -52,180 +43,136 @@ const lastsData = [
     description:
       "A sharp, aggressive silhouette for the contemporary sartorialist.",
     modalContent:
-      "The Elegant last is our most technical form. It tapers sharply at the toe to create a 'chisel' effect, lengthening the leg line. Preferred for bespoke gala commissions and sleek Chelsea boots.",
+      "The Elegant last is our most technical form. It tapers sharply at the toe to create a 'chisel' effect.",
     specs: {
       ToeShape: "Tapered Chisel",
       IntendedUse: "Formal / Gala",
       FitProfile: "Slim",
       Construction: "Refined Italian",
     },
-    bg: last3Bg,
+    coords: { x: "75%", y: "48%" },
+  },
+  {
+    id: "last3",
+    name: "The Elegant",
+    subName: "Form 003 / Taper",
+    description:
+      "A sharp, aggressive silhouette for the contemporary sartorialist.",
+    modalContent:
+      "The Elegant last is our most technical form. It tapers sharply at the toe to create a 'chisel' effect.",
+    specs: {
+      ToeShape: "Tapered Chisel",
+      IntendedUse: "Formal / Gala",
+      FitProfile: "Slim",
+      Construction: "Refined Italian",
+    },
+    coords: { x: "15%", y: "80%" },
   },
 ];
 
 const OurLasts = () => {
-  const containerRef = useRef(null);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [modalOpen, setModalOpen] = useState(false);
-  const activeLast = lastsData[activeIndex];
-
-  /* PARALLAX FOR DEPTH */
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-  const bgX = useTransform(mouseX, [-0.5, 0.5], ["-2%", "2%"]);
-  const bgY = useTransform(mouseY, [-0.5, 0.5], ["-2%", "2%"]);
-
-  const handleMouseMove = (e) => {
-    const rect = containerRef.current.getBoundingClientRect();
-    mouseX.set((e.clientX - rect.left - rect.width / 2) / rect.width);
-    mouseY.set((e.clientY - rect.top - rect.height / 2) / rect.height);
-  };
+  const [selectedLast, setSelectedLast] = useState(null);
 
   useSEO({
-    title: "Our Lasts",
-    description: "Discover our last shapes that mould the brand.",
+    title: "The Last Archive | Olú THE MAKER",
+    description: "Explore the architectural foundations of our footwear.",
   });
 
   return (
-    <div
-      ref={containerRef}
-      onMouseMove={handleMouseMove}
-      className="relative w-full h-screen overflow-hidden bg-atelier-ink text-atelier-paper"
-    >
-      {/* 1. CENTERED IMAGE FRAME */}
-      <div className="absolute inset-0 flex items-center justify-center z-0 pointer-events-none">
-        <AnimatePresence mode="wait">
+    <div className="relative w-full h-screen bg-atelier-ink overflow-hidden flex items-center justify-center p-4">
+      {/* 1. ASPECT RATIO CONTAINER - Keeps dots pinned to image pixels regardless of screen size */}
+      <div className="relative w-full max-w-[1200px] aspect-[4/3] group">
+        <img
+          src="https://res.cloudinary.com/ds78nckog/image/upload/v1778748095/ourlasts_l4aifi.jpg"
+          alt="Artisan Shoe Lasts on Shelf"
+          className="w-full h-full object-cover rounded-sm opacity-80 border border-atelier-paper/10"
+        />
+
+        {/* 2. INTERACTIVE HOTSPOTS */}
+        {lastsData.map((last) => (
           <motion.div
-            key={activeLast.id}
-            initial={{ opacity: 0, scale: 1.1, filter: "blur(10px)" }}
-            animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-            exit={{ opacity: 0, scale: 0.95, filter: "blur(10px)" }}
-            transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-            style={{ x: bgX, y: bgY }}
-            className="w-full h-full md:w-[80%] md:h-[80%] flex items-center justify-center"
+            key={last.id}
+            className="absolute z-10 -translate-x-1/2 -translate-y-1/2"
+            style={{ left: last.coords.x, top: last.coords.y }}
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
           >
-            <img
-              src={activeLast.bg}
-              alt={activeLast.name}
-              className="max-w-full max-h-full object-contain"
-            />
+            <button
+              onClick={() => setSelectedLast(last)}
+              className="relative flex items-center justify-center w-10 h-10 group/dot"
+            >
+              <span className="absolute inset-0 rounded-full bg-atelier-paper animate-ping opacity-20"></span>
+              <span className="relative w-3.5 h-3.5 rounded-full bg-atelier-paper border border-atelier-ink shadow-2xl transition-transform group-hover/dot:scale-125"></span>
+
+              <span className="absolute top-12 left-1/2 -translate-x-1/2 whitespace-nowrap bg-atelier-ink text-atelier-paper text-[9px] tracking-widest uppercase px-3 py-1 opacity-0 group-hover/dot:opacity-100 transition-opacity pointer-events-none border border-atelier-paper/20">
+                {last.name}
+              </span>
+            </button>
           </motion.div>
-        </AnimatePresence>
+        ))}
       </div>
 
-      {/* 2. TOP NAV: PROGRESS & BRAND */}
-      <div className="absolute top-10 inset-x-10 flex justify-between items-start z-20">
-        <div>
-          <span className="text-[10px] tracking-[0.4em] uppercase font-sans opacity-50 block mb-1">
-            Last Archive
-          </span>
-          <p className="font-serif italic text-lg">{activeLast.subName}</p>
-        </div>
-        <div className="font-sans text-[10px] tracking-[0.3em] opacity-50">
-          {String(activeIndex + 1).padStart(2, "0")} /{" "}
-          {String(lastsData.length).padStart(2, "0")}
-        </div>
+      {/* 3. OVERLAY TEXT (Fixed Position) */}
+      <div className="absolute top-12 left-8 md:left-16 pointer-events-none">
+        <h1 className="text-3xl md:text-6xl font-serif italic text-atelier-paper/90 tracking-tighter">
+          The Last Archive
+        </h1>
+        <p className="text-[9px] tracking-[0.4em] uppercase text-atelier-paper/40 mt-2">
+          Select a form to view specifications
+        </p>
       </div>
 
-      {/* 3. BOTTOM CONTENT: TITLE & TRIGGER */}
-      <div className="absolute bottom-12 left-10 right-10 flex flex-col md:flex-row justify-between items-end z-20">
-        <div className="max-w-xl">
-          <motion.h1
-            key={activeLast.name}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-5xl md:text-8xl font-serif italic tracking-tighter mb-4"
-          >
-            {activeLast.name}
-          </motion.h1>
-          <p className="font-serif text-lg opacity-60 italic max-w-sm leading-tight">
-            "{activeLast.description}"
-          </p>
-        </div>
-
-        <div className="flex flex-col items-end gap-8 mt-10 md:mt-0">
-          {/* Thumbnail Strip */}
-          <div className="flex gap-3">
-            {lastsData.map((last, index) => (
-              <div
-                key={last.id}
-                onClick={() => setActiveIndex(index)}
-                className={`w-12 h-16 cursor-pointer border transition-all duration-500 overflow-hidden ${
-                  index === activeIndex
-                    ? "border-atelier-paper opacity-100 scale-110"
-                    : "border-white/10 opacity-30"
-                }`}
-              >
-                <img
-                  src={last.bg}
-                  className="w-full h-full object-cover scale-150"
-                  alt="thumb"
-                />
-              </div>
-            ))}
-          </div>
-
-          <button
-            onClick={() => setModalOpen(true)}
-            className="group flex items-center gap-4 text-[10px] tracking-[0.4em] uppercase font-sans font-bold"
-          >
-            <span className="border-b border-transparent group-hover:border-atelier-paper transition-all">
-              Explore Specification
-            </span>
-            <div className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center group-hover:bg-atelier-paper group-hover:text-atelier-ink transition-all">
-              +
-            </div>
-          </button>
-        </div>
-      </div>
-
-      {/* 4. TECHNICAL MODAL (ATELIER BLUEPRINT STYLE) */}
+      {/* 4. MODAL */}
       <AnimatePresence>
-        {modalOpen && (
+        {selectedLast && (
           <>
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-atelier-ink/90 backdrop-blur-md z-40"
-              onClick={() => setModalOpen(false)}
+              onClick={() => setSelectedLast(null)}
+              className="fixed inset-0 bg-atelier-ink/95 backdrop-blur-md z-[100] cursor-zoom-out"
             />
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="fixed inset-10 z-50 flex items-center justify-center pointer-events-none"
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 20, opacity: 0 }}
+              className="fixed inset-0 z-[101] flex items-center justify-center p-4 md:p-10 pointer-events-none"
             >
-              <div className="bg-atelier-paper text-atelier-ink p-8 md:p-16 max-w-4xl w-full pointer-events-auto border border-atelier-ink/5 shadow-2xl">
-                <div className="flex justify-between items-start mb-12">
-                  <span className="text-[10px] tracking-[0.4em] uppercase font-sans font-bold opacity-40">
-                    Technical Sheet / {activeLast.id}
-                  </span>
-                  <button
-                    onClick={() => setModalOpen(false)}
-                    className="uppercase text-[10px] tracking-widest font-bold hover:text-atelier-tan"
-                  >
-                    Close ✕
-                  </button>
-                </div>
+              <div className="bg-atelier-paper text-atelier-ink p-6 md:p-16 max-w-4xl w-full pointer-events-auto shadow-2xl relative overflow-y-auto max-h-[90vh]">
+                {/* Fixed "Close" for Mobile accessibility */}
+                <button
+                  onClick={() => setSelectedLast(null)}
+                  className="absolute top-4 right-4 md:top-8 md:right-8 text-[11px] tracking-[0.2em] uppercase font-bold hover:opacity-50 p-2"
+                >
+                  Close ✕
+                </button>
 
-                <div className="grid md:grid-cols-2 gap-16">
-                  <div>
-                    <h2 className="text-4xl font-serif italic mb-6">
-                      {activeLast.name}
+                <div className="grid md:grid-cols-2 gap-8 md:gap-16 items-start mt-8 md:mt-0">
+                  <div className="space-y-4">
+                    <span className="text-[9px] tracking-[0.4em] uppercase opacity-40">
+                      Sheet No. {selectedLast.id}
+                    </span>
+                    <h2 className="text-4xl md:text-6xl font-serif italic leading-none">
+                      {selectedLast.name}
                     </h2>
-                    <p className="font-serif text-lg leading-relaxed opacity-80 mb-8">
-                      {activeLast.modalContent}
+                    <p className="font-serif text-base md:text-lg italic opacity-70 leading-relaxed pt-4">
+                      {selectedLast.modalContent}
                     </p>
                   </div>
 
-                  <div className="space-y-6 border-l border-atelier-ink/10 pl-8">
-                    {Object.entries(activeLast.specs).map(([label, value]) => (
-                      <div key={label}>
-                        <p className="text-[10px] tracking-widest uppercase font-sans opacity-40 mb-1">
-                          {label}
+                  <div className="bg-atelier-ink/[0.03] p-6 md:p-10 space-y-6 border border-atelier-ink/5">
+                    {Object.entries(selectedLast.specs).map(([key, value]) => (
+                      <div
+                        key={key}
+                        className="border-b border-atelier-ink/10 pb-3 last:border-0"
+                      >
+                        <p className="text-[8px] tracking-[0.3em] uppercase opacity-40 mb-1">
+                          {key}
                         </p>
-                        <p className="font-serif text-xl italic">{value}</p>
+                        <p className="font-serif text-lg md:text-xl italic">
+                          {value}
+                        </p>
                       </div>
                     ))}
                   </div>
