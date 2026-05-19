@@ -126,7 +126,7 @@ const Footer = ({ navLinks = [] }) => {
       <div className="py-12 text-center">
         <Link to="/">
           <h2 className="text-3xl font-serif tracking-tighter uppercase mb-4 italic">
-            Olú <span className="not-italic">The Maker</span>
+            <span className="not-italic"> Olú The Maker</span>
           </h2>
         </Link>
         <p className="text-[10px] tracking-widest opacity-50 uppercase font-sans">

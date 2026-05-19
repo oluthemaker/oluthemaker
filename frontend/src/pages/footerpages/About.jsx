@@ -20,7 +20,7 @@ const teamMembers = [
 
 const About = () => {
   useSEO({
-    title: "About Us | Olú THE MAKER",
+    title: "About Us",
     description: "Learn about our story and mission.",
   });
 
