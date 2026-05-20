@@ -10,6 +10,8 @@ import {
 import AdminOrderList from "../../components/admin/AdminOrderList";
 import AdminUserList from "../../components/admin/AdminUserList";
 import AdminTicketList from "../../components/admin/AdminTicketList";
+import { Newspaper } from "lucide-react";
+import AdminBlogManager from "../../components/admin/AdminBlogManager";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("products");
@@ -32,6 +34,7 @@ const AdminDashboard = () => {
               label: "User Activity",
               icon: <Users size={16} />,
             },
+            { id: "journal", label: "Journal", icon: <Newspaper size={16} /> },
             {
               id: "analytics",
               label: "Revenue",
@@ -121,6 +124,19 @@ const AdminDashboard = () => {
                 Financial modeling in progress...
               </p>
             </div>
+          </div>
+        )}
+        {activeTab === "journal" && (
+          <div className="max-w-4xl animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <header className="mb-12">
+              <h2 className="text-4xl font-serif italic mb-2 text-atelier-ink">
+                Journal Editorial
+              </h2>
+              <p className="text-[10px] tracking-widest uppercase opacity-40">
+                Promote stories to the hero section
+              </p>
+            </header>
+            <AdminBlogManager />
           </div>
         )}
 

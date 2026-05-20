@@ -33,7 +33,7 @@ const BlogAdminActions = ({ slug, onDeleteSuccess }) => {
     <div className="flex flex-wrap gap-4 mt-12 py-8 border-t border-atelier-ink/10">
       {/* Edit Button - Matches the "ElegantButton" aesthetic */}
       <Link
-        to={`/admin/blog/edit/${slug}`}
+        to={`/journal/edit/${slug}`}
         className="flex items-center gap-2 px-6 py-3 text-[10px] tracking-[0.2em] uppercase font-sans border border-atelier-ink text-atelier-ink hover:bg-atelier-ink hover:text-atelier-paper transition-all duration-300"
       >
         <FiEdit3 className="w-3 h-3" />

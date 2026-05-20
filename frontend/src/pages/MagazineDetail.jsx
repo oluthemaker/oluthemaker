@@ -80,7 +80,7 @@ const MagazineDetail = () => {
         <section className="grid grid-cols-1 md:grid-cols-12 gap-16 mb-32 items-start">
           {/* Left: Big Cover Image */}
           <div className="md:col-span-5">
-            <div className="sticky top-40 aspect-[3/4] shadow-2xl overflow-hidden bg-atelier-ink/10">
+            <div className="sticky top-40 aspect-[4/6] shadow-2xl overflow-hidden bg-atelier-ink/10">
               <img
                 src={images[0]}
                 className="w-full h-full object-cover"
@@ -102,7 +102,7 @@ const MagazineDetail = () => {
               </h1>
               <div className="h-[1px] w-20 bg-atelier-tan mb-8" />
               <p className="text-xl md:text-2xl font-serif italic opacity-70 leading-relaxed">
-                {magazineDetails.excerpt}
+                {issueData?.description}
               </p>
             </div>
 
@@ -141,7 +141,7 @@ const MagazineDetail = () => {
                   className="w-full md:w-auto px-10 py-4 bg-atelier-ink text-white text-[10px] tracking-[0.3em] font-sans font-bold hover:bg-atelier-tan transition-all uppercase"
                 >
                   Add {selectedFormat === "bundle" ? "Bundle" : selectedFormat}{" "}
-                  to Cart — ${currentPrice}
+                  to Cart — ₦{currentPrice}
                 </button>
 
                 <button className="block text-[9px] tracking-[0.4em] uppercase font-sans font-bold border-b border-transparent hover:border-atelier-tan py-2 transition-all mt-4">

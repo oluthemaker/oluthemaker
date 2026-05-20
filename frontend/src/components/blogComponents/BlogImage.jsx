@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 export const BlogImage = ({
   src,
@@ -7,12 +8,46 @@ export const BlogImage = ({
   caption,
   leftCaption,
   pairWith,
+  externalLink,
 }) => {
   // Enhanced Cloudinary optimization
   const optimizeUrl = (url, width = 1200) => {
     if (!url || !url.includes("cloudinary.com")) return url;
-    // Dynamically inject format, quality, and width
     return url.replace("/upload/", `/upload/f_auto,q_auto,w_${width},c_limit/`);
+  };
+
+  const ImageWrapper = ({ link, children }) => {
+    if (!link) return <>{children}</>;
+
+    // Check if it's an internal link (starts with /)
+    const isInternal = link.startsWith("/");
+
+    if (isInternal) {
+      return (
+        <Link to={link} className="cursor-pointer block group/link relative">
+          {children}
+          {/* Subtle overlay for feedback */}
+          <div className="absolute inset-0 bg-white/0 group-hover/link:bg-atelier-ink/5 transition-colors duration-500" />
+        </Link>
+      );
+    }
+
+    // Fallback for external links
+    const formattedExternal = link.startsWith("http")
+      ? link
+      : `https://${link}`;
+
+    return (
+      <a
+        href={formattedExternal}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="cursor-pointer block group/link relative"
+      >
+        {children}
+        <div className="absolute inset-0 bg-white/0 group-hover/link:bg-atelier-ink/5 transition-colors duration-500" />
+      </a>
+    );
   };
 
   const Caption = ({ text, className = "" }) => (
@@ -23,56 +58,80 @@ export const BlogImage = ({
     </figcaption>
   );
 
+  // --- Side by Side Logic ---
   if (layout === "sideBySide" && pairWith) {
     return (
-      <figure className="my-16 flex flex-col md:flex-row gap-4 md:gap-8 w-full px-4 md:px-12">
-        <div className="flex-1 group">
-          <div className="overflow-hidden bg-atelier-ink/5">
-            <img
-              src={optimizeUrl(src, 800)} // Smaller width for split screen
-              alt={alt}
-              className="w-full h-full object-cover  group-hover:grayscale-0 transition-all duration-1000"
-            />
-          </div>
-          {leftCaption && <Caption text={leftCaption} />}
+      <figure
+        className="my-16 flex flex-col md:flex-row w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]
+                          gap-2 md:gap-4 lg:gap-8 bg-white"
+      >
+        {/* Left Image Container */}
+        <div className="flex-1 group w-full">
+          <ImageWrapper link={externalLink}>
+            <div className="overflow-hidden bg-atelier-ink/5 aspect-[4/5] md:aspect-[3/4]">
+              <img
+                src={optimizeUrl(src, 1200)}
+                className="w-full h-full object-cover transition-transform duration-1000 group-hover/link:scale-105"
+              />
+            </div>
+          </ImageWrapper>
+          {leftCaption && <Caption text={leftCaption} className="py-4" />}
         </div>
 
-        <div className="flex-1 group">
-          <div className="overflow-hidden bg-atelier-ink/5">
-            <img
-              src={optimizeUrl(pairWith.src, 800)}
-              alt={pairWith.alt}
-              className="w-full h-full object-cover  group-hover:grayscale-0 transition-all duration-1000"
-            />
-          </div>
-          {pairWith.caption && <Caption text={pairWith.caption} />}
+        {/* Right Image Container */}
+        <div className="flex-1 group w-full">
+          <ImageWrapper link={pairWith.externalLink}>
+            <div className="w-full h-full object-cover transition-transform duration-1000 group-hover/link:scale-105">
+              <img
+                src={optimizeUrl(pairWith.src, 1200)}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </ImageWrapper>
+          {pairWith.caption && (
+            <Caption text={pairWith.caption} className="py-4" />
+          )}
         </div>
       </figure>
     );
   }
 
+  // --- Single Image Logic ---
   const layoutClasses = {
     default: "max-w-3xl mx-auto my-16 px-6",
-    wide: "max-w-6xl mx-auto my-20 px-6",
-    // Uses the breakout technique to span the full viewport
+    wide: "max-w-6xl mx-auto my-20 px-6 lg:px-12",
+    // This trick forces the element to be 100vw regardless of parent constraints
     fullBleed:
-      "w-screen relative left-[50%] right-[50%] ml-[-50vw] mr-[-50vw] my-24",
+      "relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen my-24",
   };
 
-  // Determine width based on layout
+  // FIX: Define imgWidth based on the layout
   const imgWidth =
     layout === "fullBleed" ? 2000 : layout === "wide" ? 1400 : 1000;
 
   return (
-    <figure className={`${layoutClasses[layout]} group`}>
-      <div className="overflow-hidden bg-atelier-ink/5">
-        <img
-          src={optimizeUrl(src, imgWidth)}
-          alt={alt}
-          className={`w-full h-auto grayscale group-hover:grayscale-0 transition-all duration-1000 ${layout === "fullBleed" ? "aspect-[21/9] object-cover" : ""}`}
-        />
+    <figure
+      className={`${layoutClasses[layout]} group flex flex-col items-center`}
+    >
+      <div className="overflow-hidden bg-atelier-ink/5 w-full">
+        <ImageWrapper link={externalLink}>
+          <img
+            src={optimizeUrl(src, imgWidth)}
+            alt={alt}
+            className={`w-full h-auto transition-all duration-1000 ${
+              layout === "fullBleed"
+                ? "block" // No aspect ratio or object-cover here
+                : ""
+            }`}
+          />
+        </ImageWrapper>
       </div>
-      {caption && <Caption text={caption} />}
+      {caption && (
+        <Caption
+          text={caption}
+          className={layout === "fullBleed" ? "max-w-3xl" : ""}
+        />
+      )}
     </figure>
   );
 };

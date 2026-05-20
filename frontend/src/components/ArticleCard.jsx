@@ -6,7 +6,7 @@ const ArticleCard = ({ article }) => {
 
   return (
     <Link to={`/journal/${article.slug}`} className="group flex flex-col">
-      <div className="aspect-[4/5] overflow-hidden mb-6 bg-atelier-ink/5 relative">
+      <div className="aspect-[4/6] overflow-hidden mb-6 bg-atelier-ink/5 relative">
         <img
           src={article.headerImage}
           alt={article.title}

@@ -9,14 +9,17 @@ const contentBlockSchema = new mongoose.Schema(
     },
     content: { type: String }, // For text and quotes
     src: { type: String }, // For single images
+    externalLink: { type: String },
     alt: { type: String },
     caption: { type: String },
+    layout: { type: String, enum: ["default", "wide", "fullBleed"] },
     images: [
       {
         // For side-by-side images
         src: { type: String },
         alt: { type: String },
         caption: { type: String },
+        externalLink: { type: String },
       },
     ],
     author: { type: String }, // For quote citations
@@ -32,8 +35,15 @@ const blogSchema = new mongoose.Schema(
     headerImage: { type: String }, // Full-width Hero
     innerImageForFeatured: { type: String },
     featured: { type: Boolean, default: false },
+    featuredPost: { type: Boolean, default: false },
     category: { type: String, required: true }, // e.g., "Atelier Notes"
     contentBlocks: [contentBlockSchema],
+    credits: [
+      {
+        role: { type: String }, // e.g., "Photography"
+        name: { type: String }, // e.g., "Julian Master"
+      },
+    ],
     author: { type: String, default: "Olu THE MAKER" },
     publishedAt: { type: Date, default: Date.now },
     tags: [String],

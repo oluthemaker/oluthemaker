@@ -92,11 +92,15 @@ function App() {
             {/* Blog Routes*/}
             <Route path="/journal">
               <Route index element={<Blog />} />
-              <Route path=":slug" element={<SingleBlogPost />} />
-              {/* Adds new blog  post */}
+
+              {/* 1. Admin Routes First (Specific matches) */}
               <Route element={<ProtectedRoute adminOnly={true} />}>
                 <Route path="write" element={<CreateBlog />} />
+                <Route path="edit/:slug" element={<CreateBlog />} />
               </Route>
+
+              {/* 2. Dynamic Route Last (Catch-all for slugs) */}
+              <Route path=":slug" element={<SingleBlogPost />} />
             </Route>
           </Routes>
         </main>

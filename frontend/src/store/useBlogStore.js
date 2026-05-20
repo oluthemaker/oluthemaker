@@ -1,6 +1,7 @@
 // store/blogStore.js
 import { create } from "zustand";
 import API from "../api/axios";
+import useUserStore from "./useUserStore";
 
 const useBlogStore = create((set) => ({
   blogs: [],
@@ -142,6 +143,29 @@ const useBlogStore = create((set) => ({
         loading: false,
       });
       return false;
+    }
+  },
+  // Add this inside useBlogStore
+  updateBlog: async (id, blogData) => {
+    set({ loading: true, error: null });
+    try {
+      const token = useUserStore.getState().user?.token;
+      const { data } = await API.put(`/blogs/${id}`, blogData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      set((state) => ({
+        blogs: state.blogs.map((b) => (b._id === id ? data.data : b)),
+        currentBlog: data.data,
+        loading: false,
+      }));
+      return data.data;
+    } catch (err) {
+      const msg = err.response?.data?.error || "Update failed";
+      set({ error: msg, loading: false });
+      throw new Error(msg);
     }
   },
 }));

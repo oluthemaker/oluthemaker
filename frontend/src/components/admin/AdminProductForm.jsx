@@ -217,7 +217,7 @@ const AdminProductForm = () => {
           <div className="grid grid-cols-2 gap-8">
             <div>
               <label className="text-[9px] tracking-[0.3em] uppercase opacity-50 block mb-2 font-bold">
-                Price ($)
+                Price (₦)
               </label>
               <input
                 type="number"

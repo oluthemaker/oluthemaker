@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   FiPlus,
   FiTrash2,
@@ -18,8 +18,20 @@ import "react-quill-new/dist/quill.snow.css";
 const CreateBlog = () => {
   const navigate = useNavigate();
   const { user } = useUserStore();
-  const { createBlog } = useBlogStore();
+  const { slug } = useParams(); // Check if we are editing
+  const { fetchBlogBySlug, currentBlog, createBlog, updateBlog } =
+    useBlogStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const categories = [
+    "all",
+    "news",
+    "masters-of-the-craft",
+    "moving-hands",
+    "our-advice",
+  ];
+
+  console.log(currentBlog);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -28,11 +40,54 @@ const CreateBlog = () => {
     headerImageUrl: "",
     innerImageForFeaturedUrl: "",
     featured: false,
+    credits: [],
     author: "Olu THE MAKER", // Editable default
     category: "news",
     contentBlocks: [],
     tags: [],
   });
+
+  useEffect(() => {
+    if (slug) {
+      fetchBlogBySlug(slug);
+    }
+  }, [slug]);
+
+  useEffect(() => {
+    if (slug && currentBlog) {
+      setFormData({
+        ...formData, // Spread existing defaults to keep all fields (like credits, tags, etc.)
+        title: currentBlog.title || "",
+        contentBlocks: currentBlog.contentBlocks || [],
+        category: currentBlog.category || "news",
+        headerImageUrl: currentBlog.headerImage || "", // Map backend naming to your frontend state
+        description: currentBlog.description || "",
+        credits: currentBlog.credits || [], // Ensure this is explicitly set to an array
+        author: currentBlog.author || "Olu THE MAKER",
+      });
+    }
+  }, [currentBlog, slug]);
+
+  const addCredit = () => {
+    setFormData((p) => ({
+      ...p,
+      credits: [...p.credits, { role: "", name: "" }],
+    }));
+  };
+
+  const updateCredit = (index, field, value) => {
+    const newCredits = [...formData.credits];
+    // Clone the specific credit object before modifying
+    newCredits[index] = { ...newCredits[index], [field]: value };
+    setFormData((p) => ({ ...p, credits: newCredits }));
+  };
+
+  const removeCredit = (index) => {
+    setFormData((p) => ({
+      ...p,
+      credits: p.credits.filter((_, i) => i !== index),
+    }));
+  };
 
   // Cloudinary Upload Logic
   const handleFileUpload = async (file, callback) => {
@@ -66,15 +121,18 @@ const CreateBlog = () => {
           "Missing required fields (Title, Header, or Description)",
         );
 
-      const blogData = {
-        ...formData,
-        headerImage: formData.headerImageUrl,
-        innerImageForFeatured: formData.innerImageForFeaturedUrl,
-        slug: slugify(formData.title),
-        publishedAt: new Date().toISOString(),
-      };
-
-      await createBlog(blogData, user.token);
+      if (slug) {
+        await updateBlog(currentBlog._id, formData); // Use ID for the backend update
+      } else {
+        const blogData = {
+          ...formData,
+          headerImage: formData.headerImageUrl,
+          innerImageForFeatured: formData.innerImageForFeaturedUrl,
+          slug: slugify(formData.title),
+          publishedAt: new Date().toISOString(),
+        };
+        await createBlog(blogData, user.token);
+      }
       navigate(`/journal`);
     } catch (err) {
       alert(`Error: ${err.message}`);
@@ -97,6 +155,7 @@ const CreateBlog = () => {
       image: {
         type: "image",
         src: "",
+        externalLink: "",
         alt: "",
         layout: "default",
         caption: "",
@@ -105,8 +164,8 @@ const CreateBlog = () => {
       "side-by-side-images": {
         type: "side-by-side-images",
         images: [
-          { src: "", alt: "", caption: "" },
-          { src: "", alt: "", caption: "" },
+          { src: "", alt: "", caption: "", externalLink: "" },
+          { src: "", alt: "", caption: "", externalLink: "" },
         ],
       },
     };
@@ -172,6 +231,58 @@ const CreateBlog = () => {
                   />
                 </div>
               </div>
+              {/* Credits Section */}
+              <div className="space-y-4 border-t border-atelier-ink/5 pt-6">
+                <div className="flex justify-between items-center">
+                  <label className="text-[10px] tracking-[0.3em] uppercase opacity-40">
+                    Production Credits
+                  </label>
+                  <button
+                    type="button"
+                    onClick={addCredit}
+                    className="text-[10px] uppercase tracking-widest text-atelier-tan hover:underline"
+                  >
+                    + Add Credit
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4">
+                  {formData?.credits?.map((credit, idx) => (
+                    <div
+                      key={idx}
+                      className="flex gap-4 items-end bg-white/30 p-4 border border-atelier-ink/5"
+                    >
+                      <div className="flex-1">
+                        <input
+                          placeholder="Role (e.g. Photography)"
+                          className="w-full bg-transparent border-b border-atelier-ink/10 text-[10px] uppercase outline-none"
+                          value={credit.role}
+                          onChange={(e) =>
+                            updateCredit(idx, "role", e.target.value)
+                          }
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <input
+                          placeholder="Name"
+                          className="w-full bg-transparent border-b border-atelier-ink/10 text-sm italic font-serif outline-none"
+                          value={credit.name}
+                          onChange={(e) =>
+                            updateCredit(idx, "name", e.target.value)
+                          }
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeCredit(idx)}
+                        className="text-atelier-ink/30 hover:text-red-500"
+                      >
+                        <FiTrash2 size={14} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
               {/* Author Field */}
               <div className="bg-atelier-ink/5 p-6 border border-atelier-ink/10 flex items-center gap-6">
@@ -189,6 +300,33 @@ const CreateBlog = () => {
                   />
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Category Selection */}
+          <div className="space-y-3">
+            <label className="text-[10px] tracking-[0.3em] uppercase opacity-40">
+              Editorial Category
+            </label>
+            <div className="flex flex-wrap gap-3">
+              {categories
+                .filter((cat) => cat !== "all")
+                .map((cat) => (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() =>
+                      setFormData((p) => ({ ...p, category: cat }))
+                    }
+                    className={`px-4 py-2 text-[10px] tracking-widest uppercase border transition-all duration-300 ${
+                      formData.category === cat
+                        ? "bg-atelier-ink text-white border-atelier-ink"
+                        : "border-atelier-ink/10 text-atelier-ink/60 hover:border-atelier-ink"
+                    }`}
+                  >
+                    {cat.replace("-", " ")}
+                  </button>
+                ))}
             </div>
           </div>
 
@@ -320,6 +458,16 @@ const CreateBlog = () => {
                         <option value="fullBleed">Full Bleed</option>
                       </select>
                       <input
+                        placeholder="External Link (Optional)..."
+                        className="w-full bg-transparent border-b border-atelier-ink/20 text-xs py-2"
+                        value={block.externalLink || ""}
+                        onChange={(e) =>
+                          updateContentBlock(index, {
+                            externalLink: e.target.value,
+                          })
+                        }
+                      />
+                      <input
                         placeholder="Caption..."
                         className="w-full bg-transparent border-b border-atelier-ink/20 text-xs py-2 italic font-serif"
                         value={block.caption}
@@ -331,15 +479,11 @@ const CreateBlog = () => {
                   </div>
                 )}
                 {/* --- SIDE-BY-SIDE RENDERER --- */}
-                // ... (imports remain the same as previous)
                 {block.type === "side-by-side-images" && (
                   <div className="space-y-6">
                     <div className="flex items-center justify-between border-b border-atelier-ink/5 pb-2">
                       <span className="text-[10px] tracking-[0.3em] uppercase text-atelier-tan font-bold">
                         Asymmetric Pair Layout
-                      </span>
-                      <span className="text-[10px] tracking-widest uppercase opacity-30 italic">
-                        Modeled after: The Rake
                       </span>
                     </div>
 
@@ -430,7 +574,7 @@ const CreateBlog = () => {
                     </div>
                   </div>
                 )}
-                // ... (rest of component remains the same)
+
                 {block.type === "pull-quote" && (
                   <textarea
                     placeholder="Enter the pull quote..."

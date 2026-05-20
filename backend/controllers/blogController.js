@@ -1,11 +1,30 @@
 import Blog from "../models/blogModel.js";
+import Product from "../models/productModel.js";
 
 // @desc    Create a blog post
 export const createBlog = async (req, res) => {
   try {
+    // 1. Create the blog entry
     const blog = new Blog(req.body);
-    await blog.save();
-    res.status(201).json({ success: true, data: blog });
+    const savedBlog = await blog.save();
+
+    // 2. Check if a magazine issue number was provided
+    if (req.body.magazineIssue) {
+      // Find the magazine product by category and issue number
+      // We use a regex or parseInt to ensure the match is robust
+      const magazine = await Product.findOne({
+        category: "Magazine",
+        "magazineDetails.issueNumber": parseInt(req.body.magazineIssue),
+      });
+
+      if (magazine) {
+        // Add the blog ID to the magazine's articles array
+        magazine.magazineDetails.articles.push(savedBlog._id);
+        await magazine.save();
+      }
+    }
+
+    res.status(201).json({ success: true, data: savedBlog });
   } catch (err) {
     res.status(400).json({ success: false, error: err.message });
   }
@@ -100,5 +119,50 @@ export const deleteBlog = async (req, res) => {
     res.json({ success: true, message: "Archive entry removed" });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+};
+
+// @desc    Update a blog post
+export const updateBlog = async (req, res) => {
+  try {
+    const blog = await Blog.findById(req.params.id);
+
+    if (!blog) {
+      return res.status(404).json({ success: false, error: "Post not found" });
+    }
+
+    // If this post is being set to featured, unset all others first.
+    if (req.body.featured === true) {
+      await Blog.updateMany(
+        { _id: { $ne: blog._id } },
+        { $set: { featured: false } },
+      );
+    }
+
+    // Update fields
+    Object.assign(blog, req.body);
+
+    // If title changed, you might want to re-slugify here if not handled by frontend
+    const updatedBlog = await blog.save();
+
+    // Sync with Magazine if issue is provided
+    if (req.body.magazineIssue) {
+      const magazine = await Product.findOne({
+        category: "Magazine",
+        "magazineDetails.issueNumber": parseInt(req.body.magazineIssue),
+      });
+
+      if (
+        magazine &&
+        !magazine.magazineDetails.articles.includes(updatedBlog._id)
+      ) {
+        magazine.magazineDetails.articles.push(updatedBlog._id);
+        await magazine.save();
+      }
+    }
+
+    res.json({ success: true, data: updatedBlog });
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
   }
 };

@@ -1,5 +1,8 @@
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import FeaturedBlogCard from "../components/FeaturedBlogCard";
+import useBlogStore from "../store/useBlogStore";
+import useSEO from "../hooks/useSEO";
 
 const Home = () => {
   const featuredPost = {
@@ -11,36 +14,48 @@ const Home = () => {
     slug: "anatomy-of-hand-welting",
   };
 
+  useSEO({
+    title: "Home",
+    description: "The home of Africa's number one Bespoke and Menswear hub ",
+  });
+
+  const { featuredBlog, loading } = useBlogStore();
+  console.log(featuredBlog);
+
   return (
     <div className="bg-atelier-paper text-atelier-ink">
       {/* HERO SECTION: THE LEAD STORY */}
-      <section className="h-screen relative overflow-hidden flex items-center">
+      <section className="h-screen lg:min-h-[900px] xl:min-h-[1100px] relative overflow-hidden flex items-center">
+        {" "}
         <img
-          src="https://ik.imagekit.io/ldhzgky9pk/homepage_30GJg_2f9?updatedAt=1756298454824"
+          src={featuredBlog?.headerImage}
           alt="Hero"
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full lg:h-[200vh] object-cover object-[50%_30%] lg:object-[50%_20%]"
+          style={{ objectPosition: "50% 20%" }}
         />
         <div className="absolute inset-0 bg-atelier-ink/40" />
-
         <div className="relative z-10 px-6 md:px-12 w-full max-w-5xl">
           <span className="text-[10px] tracking-[0.5em] uppercase font-sans text-atelier-paper/80 block mb-6">
             Current Feature
           </span>
           <h1 className="text-4xl md:text-7xl font-serif italic text-white leading-[1.1] tracking-tighter max-w-3xl">
-            The Creative Process: <br />
-            <span className="not-italic">Olú the Maker</span>
+            {featuredBlog?.title.split(":")[0]}:
+            <br />
+            <span className="not-italic">
+              {" "}
+              {featuredBlog?.title.split(":")[1]}
+            </span>
           </h1>
 
           <p className="mt-8 text-lg text-atelier-paper/90 font-serif italic max-w-lg leading-relaxed">
-            An exploration into the craftsmanship defining the continent's most
-            intentional bespoke house.
+            {featuredBlog?.description}
           </p>
 
           <Link
-            to="/blog"
+            to={`/journal/${featuredBlog?.slug}`}
             className="inline-block mt-10 px-10 py-4 border border-white text-white text-[10px] tracking-[0.3em] font-sans font-bold hover:bg-white hover:text-atelier-ink transition-all duration-500 uppercase"
           >
-            Read the Article
+            DISCOVER
           </Link>
         </div>
       </section>

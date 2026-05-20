@@ -12,6 +12,11 @@
     --font-serif: "Adobe Garamond Pro", serif;
 }
 
+body {
+    overflow-x: hidden;
+    width: 100%;
+}
+
 @font-face {
     font-family: "Adobe Garamond Pro";
     src: url("/fonts/AdobeGaramondPro-Regular.woff2") format("woff2");

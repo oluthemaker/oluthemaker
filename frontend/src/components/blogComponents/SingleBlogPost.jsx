@@ -29,7 +29,7 @@ const SingleBlogPost = () => {
   }, [slug, fetchBlogBySlug]);
 
   useEffect(() => {
-    setIsAdmin(user?.user?.role === "admin");
+    setIsAdmin(user?.user?.isAdmin);
   }, [user]);
 
   const handleShare = (platform) => {
@@ -65,7 +65,7 @@ const SingleBlogPost = () => {
   };
 
   const handleDeleteSuccess = () => {
-    navigate("/blog");
+    navigate("/journal");
   };
 
   useSEO({
@@ -99,52 +99,60 @@ const SingleBlogPost = () => {
   return (
     <div className="bg-atelier-paper text-atelier-ink min-h-screen overflow-x-hidden pb-24">
       {/* 1. Minimalist Top Navigation */}
-      <nav className="w-full px-6 py-6 absolute top-0 z-10 flex justify-between items-center mix-blend-difference text-white">
+      <nav className="w-full px-6 py-8 flex justify-between items-center bg-atelier-paper border-b border-atelier-ink/5">
         <button
-          onClick={() => navigate("/blog")}
-          className="flex items-center gap-2 text-[10px] tracking-widest uppercase hover:text-atelier-tan transition-colors"
+          onClick={() => navigate("/journal")}
+          className="flex items-center gap-2 text-[10px] tracking-[0.3em] uppercase hover:text-atelier-tan transition-colors group"
         >
-          <FiArrowLeft className="w-3 h-3" />
+          <FiArrowLeft className="w-3 h-3 transition-transform group-hover:-translate-x-1" />
           Return to Archive
         </button>
       </nav>
 
-      {/* 2. Full-screen Hero Image */}
-      <div className="w-full h-[70vh] md:h-[85vh] relative overflow-hidden bg-atelier-ink">
+      {/* 2. HERO IMAGE - Now starts exactly after the Journal Nav */}
+      <div className="w-full h-[80vh] md:h-[130vh] lg:h-[200vh]  relative overflow-hidden bg-atelier-ink">
         <img
           src={currentBlog.headerImage}
           alt={currentBlog.title}
-          className="w-full h-full object-cover  hover:grayscale-0 transition-all duration-[2000ms]"
+          className="w-full h-full object-cover transition-all duration-[2000ms]"
         />
-        {/* Subtle gradient to ensure the image fades nicely into the paper color below */}
+        {/* Subtle gradient to fade into the paper color below */}
         <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-atelier-paper to-transparent" />
       </div>
-
       {/* 3. Title & Meta Section (Centered, constrained width) */}
       <header className="max-w-4xl mx-auto px-6 py-16 text-center">
+        {" "}
         {currentBlog.category && (
           <span className="text-[10px] tracking-[0.4em] uppercase text-atelier-tan mb-6 inline-block">
             {currentBlog.category.replace("-", " ")}
           </span>
         )}
-
         <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif italic leading-tight mb-8">
           {currentBlog.title}
         </h1>
-
         <p className="text-xl md:text-2xl font-serif text-atelier-ink/70 leading-relaxed mb-12 max-w-2xl mx-auto">
           {currentBlog.description}
         </p>
-
         {/* Meta & Share Toolbar */}
         <div className="flex flex-col md:flex-row justify-between items-center py-6 border-y border-atelier-ink/10 gap-6">
-          <div className="flex gap-4 md:gap-8 text-[10px] tracking-[0.2em] uppercase font-sans text-atelier-ink/60">
+          <div className="flex flex-wrap justify-center gap-y-2 gap-x-4 md:gap-x-8 text-[10px] tracking-[0.2em] uppercase font-sans text-atelier-ink/60">
             <span>
               By{" "}
               <span className="text-atelier-ink font-bold">
                 {currentBlog?.author || "Atelier"}
               </span>
             </span>
+
+            {/* Map through the dynamic credits */}
+            {currentBlog.credits?.map((credit, i) => (
+              <span key={i}>
+                {credit.role}{" "}
+                <span className="text-atelier-ink font-bold">
+                  {credit.name}
+                </span>
+              </span>
+            ))}
+
             <span>
               {new Date(currentBlog.publishedAt).toLocaleDateString("en-GB", {
                 day: "numeric",
@@ -186,12 +194,10 @@ const SingleBlogPost = () => {
           </div>
         </div>
       </header>
-
       {/* 4. Blog Content (W-full so it can handle fullBleed images) */}
-      <article className="w-full">
+      <main className="w-full">
         <BlogContentRenderer contentBlocks={currentBlog.contentBlocks} />
-      </article>
-
+      </main>
       {/* 5. Admin Actions */}
       {isAdmin && (
         <div className="max-w-3xl mx-auto px-6">

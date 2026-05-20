@@ -23,20 +23,21 @@ const BlogContentRenderer = ({ contentBlocks }) => {
             return (
               <TextWrapper key={index}>
                 <div
-                  className="prose prose-atelier max-w-none font-serif text-lg leading-relaxed text-atelier-ink/90"
+                  className="prose prose-atelier max-w-none font-serif text-lg leading-relaxed text-atelier-ink/90
+                             break-words overflow-wrap-anywhere"
                   dangerouslySetInnerHTML={{
-                    // Note: Use a proper library like DOMPurify if users can edit this
-                    __html: (block.content || "").replace(/\n/g, "<br />"),
+                    // Removed the .replace(/\n/g, "<br />") because Quill handles paragraphs
+                    __html: block.content || "",
                   }}
                 />
               </TextWrapper>
             );
-
           case "image":
             return (
               <BlogImage
                 key={index}
                 src={block.src}
+                externalLink={block.externalLink}
                 alt={block.alt || ""}
                 layout={block.layout || "default"} // handles 'default', 'wide', 'fullBleed'
                 caption={block.caption}
@@ -48,22 +49,19 @@ const BlogContentRenderer = ({ contentBlocks }) => {
 
           case "side-by-side-images":
             return (
-              <div className="max-w-6xl mx-auto px-4">
-                <BlogImage
-                  key={index}
-                  layout="sideBySide"
-                  src={block.images[0].src}
-                  alt={block.images[0].alt}
-                  leftCaption={block.images[0].caption}
-                  pairWith={{
-                    src: block.images[1].src,
-                    alt: block.images[1].alt,
-                    caption: block.images[1].caption,
-                  }}
-                />
-              </div>
+              <BlogImage
+                key={index}
+                layout="sideBySide" // Match this to the 'if' statement in BlogImage.jsx
+                src={block.images[0].src}
+                externalLink={block.images[0].externalLink}
+                leftCaption={block.images[0].caption}
+                pairWith={{
+                  src: block.images[1].src,
+                  caption: block.images[1].caption,
+                  externalLink: block.images[1].externalLink,
+                }}
+              />
             );
-
           default:
             return null;
         }

@@ -11,7 +11,6 @@ const useAdminStore = create((set) => ({
     try {
       // Your protected admin route
       const res = await API.post("/products", productData);
-      console.log(productData);
 
       set({ isLoading: false });
       return { success: true, data: res.data };

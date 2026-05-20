@@ -5,11 +5,13 @@ import {
   FiChevronRight,
   FiMenu,
   FiX,
+  FiPlus,
 } from "react-icons/fi";
 import useBlogStore from "../store/useBlogStore";
 import { Link } from "react-router-dom";
 import ArticleCard from "../components/ArticleCard";
 import useSEO from "../hooks/useSEO";
+import useUserStore from "../store/useUserStore";
 
 export default function Blog() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -17,6 +19,8 @@ export default function Blog() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [search, setSearch] = useState("");
   const [isInitialLoad, setIsInitialLoad] = useState(true); // Track first load
+  const { user } = useUserStore(); // Get user
+  const isAdmin = user?.user?.isAdmin;
 
   const categories = [
     "all",
@@ -35,6 +39,8 @@ export default function Blog() {
     totalPages,
     searchBlogs,
   } = useBlogStore();
+
+  console.log(blogs);
 
   // Sync fetch with category changes
   useEffect(() => {
@@ -83,7 +89,7 @@ export default function Blog() {
     <div className="flex flex-col min-h-screen bg-atelier-paper text-atelier-ink overflow-x-hidden">
       {/* 1. FULL SCREEN HERO SECTION */}
       {featuredBlog && (
-        <section className="relative w-full h-screen overflow-hidden bg-atelier-ink">
+        <section className="w-full h-[80vh] md:h-[130vh] lg:h-[200vh]  relative overflow-hidden bg-atelier-ink">
           <img
             src={featuredBlog.headerImage}
             alt={featuredBlog.title}
@@ -115,6 +121,16 @@ export default function Blog() {
       {/* 2. STICKY NAV: BURGER (Left) & SEARCH (Right) */}
       <nav className="sticky top-0 z-[60] bg-atelier-paper/95 backdrop-blur-md border-y border-atelier-ink/10">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+          {/* Admin Create Button - Displayed on the left of desktop menu or after burger */}
+          {isAdmin && (
+            <Link
+              to="/journal/write"
+              className="flex items-center gap-2 mr-6 px-4 py-2 bg-atelier-ink text-atelier-paper text-[10px] tracking-widest uppercase hover:bg-atelier-tan transition-colors"
+            >
+              <FiPlus size={14} />
+              <span>New Entry</span>
+            </Link>
+          )}
           {/* Mobile Menu Toggle & Desktop Categories */}
           <div className="flex items-center">
             <button

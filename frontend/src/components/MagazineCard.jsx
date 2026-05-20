@@ -12,7 +12,7 @@ const MagazineCard = ({ issue }) => {
     >
       <Link to={`/magazine/${issue.slug}`}>
         {/* THE COVER */}
-        <div className="relative aspect-[3/4] overflow-hidden bg-atelier-ink/5 mb-6 shadow-sm group-hover:shadow-2xl transition-all duration-500">
+        <div className="relative aspect-[4/6] overflow-hidden bg-atelier-ink/5 mb-6 shadow-sm group-hover:shadow-2xl transition-all duration-500">
           <motion.img
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.8, ease: [0.33, 1, 0.68, 1] }}
