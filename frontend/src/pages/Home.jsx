@@ -19,8 +19,10 @@ const Home = () => {
     description: "The home of Africa's number one Bespoke and Menswear hub ",
   });
 
-  const { featuredBlog, loading } = useBlogStore();
-  console.log(featuredBlog);
+  const { featuredBlog, fetchBlogs } = useBlogStore();
+  useEffect(() => {
+    fetchBlogs();
+  }, [fetchBlogs]);
 
   return (
     <div className="bg-atelier-paper text-atelier-ink">

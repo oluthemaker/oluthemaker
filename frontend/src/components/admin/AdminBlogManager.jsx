@@ -9,7 +9,6 @@ const AdminBlogManager = () => {
     fetchBlogs(1, "", 20); // Fetch recent blogs
   }, [fetchBlogs]);
 
-  console.log(blogs);
   const handleToggleFeatured = async (blog) => {
     try {
       // Toggle the featured status
