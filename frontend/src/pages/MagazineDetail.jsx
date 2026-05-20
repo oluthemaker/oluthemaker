@@ -9,14 +9,41 @@ import useSEO from "../hooks/useSEO";
 
 const MagazineDetail = () => {
   const { slug } = useParams();
-  const { getProductBySlug, loading } = useProductStore();
   const [searchTerm, setSearchTerm] = useState("");
   const { addToCart } = useCartStore();
+  const { getProductBySlug, loading: storeLoading } = useProductStore();
+  const [issueData, setIssueData] = useState(null);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
 
-  const issueData = getProductBySlug(slug);
+  const [selectedFormat, setSelectedFormat] = useState("print");
+
+  useEffect(() => {
+    const loadData = async () => {
+      setIsInitialLoading(true);
+      const data = await getProductBySlug(slug);
+      setIssueData(data);
+      setIsInitialLoading(false);
+    };
+
+    if (slug) {
+      loadData();
+    }
+    window.scrollTo(0, 0);
+  }, [slug, getProductBySlug]);
+
+  useSEO({
+    title: issueData?.name,
+    description: issueData?.description,
+    ogImage: issueData?.images?.[0]?.url,
+  });
+
+  // Use the local loading state and the store's loading state
+  if (isInitialLoading || storeLoading) {
+    return <div className="pt-40 text-center italic">Loading Archive...</div>;
+  }
 
   // Handle case where issue doesn't exist (e.g., user types a wrong URL)
-  if (!issueData && !loading) {
+  if (!issueData) {
     return (
       <div className="bg-atelier-paper min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -34,27 +61,23 @@ const MagazineDetail = () => {
     );
   }
 
-  if (loading || !issueData)
+  if (isInitialLoading || storeLoading)
     return <div className="pt-40 text-center italic">Loading...</div>;
 
-  // Destructure for cleaner code
-  const { magazineDetails, name, price, images, isAvailable } = issueData;
-
   // You might want to initialize to "digital" if magazineDetails.isDigital is true and there is no print version.
-  const [selectedFormat, setSelectedFormat] = useState("print");
 
   // NEW: Dynamic Pricing Calculation
   // Adjust these multipliers or replace them with actual database fields if you have them!
   const FORMAT_PRICES = {
-    print: price,
-    digital: Math.round(price * 0.6), // Example: Digital is 60% of the print price
-    bundle: Math.round(price * 1.3), // Example: Bundle is 130% of the print price
+    print: issueData?.price,
+    digital: Math.round(issueData?.price * 0.6), // Example: Digital is 60% of the print price
+    bundle: Math.round(issueData?.price * 1.3), // Example: Bundle is 130% of the print price
   };
 
   const currentPrice = FORMAT_PRICES[selectedFormat];
 
-  const filteredArticles = magazineDetails?.articles?.filter((article) =>
-    article.title.toLowerCase().includes(searchTerm.toLowerCase()),
+  const filteredArticles = issueData?.magazineDetails?.articles?.filter(
+    (article) => article.title.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const handleAddToCart = () => {
@@ -67,12 +90,6 @@ const MagazineDetail = () => {
     });
   };
 
-  useSEO({
-    title: issueData?.name,
-    description: issueData?.description,
-    ogImage: images?.[0]?.url,
-  });
-
   return (
     <main className="bg-atelier-paper text-atelier-ink min-h-screen pt-40 pb-32">
       <div className="max-w-7xl mx-auto px-6">
@@ -82,7 +99,7 @@ const MagazineDetail = () => {
           <div className="md:col-span-5">
             <div className="sticky top-40 aspect-[4/6] shadow-2xl overflow-hidden bg-atelier-ink/10">
               <img
-                src={images[0]}
+                src={issueData?.images?.[0]}
                 className="w-full h-full object-cover"
                 alt={name}
               />
@@ -94,8 +111,8 @@ const MagazineDetail = () => {
           <div className="md:col-span-7 space-y-10">
             <div>
               <span className="text-[10px] tracking-[0.5em] uppercase font-sans font-bold opacity-40 block mb-4">
-                Issue No. {magazineDetails.issueNumber} •{" "}
-                {magazineDetails.year}{" "}
+                Issue No. {issueData?.magazineDetails?.issueNumber} •{" "}
+                {issueData?.magazineDetails?.year}{" "}
               </span>
               <h1 className="text-5xl md:text-8xl font-serif italic tracking-tighter leading-none mb-8">
                 {name}

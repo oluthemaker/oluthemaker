@@ -24,11 +24,11 @@ export const BlogImage = ({
 
     if (isInternal) {
       return (
-        <Link to={link} className="cursor-pointer block group/link relative">
+        <a href={link} className="cursor-pointer block group/link relative">
           {children}
           {/* Subtle overlay for feedback */}
           <div className="absolute inset-0 bg-white/0 group-hover/link:bg-atelier-ink/5 transition-colors duration-500" />
-        </Link>
+        </a>
       );
     }
 

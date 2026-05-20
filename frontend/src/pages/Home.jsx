@@ -19,10 +19,19 @@ const Home = () => {
     description: "The home of Africa's number one Bespoke and Menswear hub ",
   });
 
-  const { featuredBlog, fetchBlogs } = useBlogStore();
+  const { featuredBlog, fetchBlogs, loading } = useBlogStore();
   useEffect(() => {
     fetchBlogs();
   }, [fetchBlogs]);
+
+  if (loading)
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-atelier-paper">
+        <span className="text-[10px] tracking-[0.5em] uppercase animate-pulse text-atelier-ink">
+          Opening Archive
+        </span>
+      </div>
+    );
 
   return (
     <div className="bg-atelier-paper text-atelier-ink">

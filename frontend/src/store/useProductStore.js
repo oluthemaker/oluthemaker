@@ -26,8 +26,33 @@ const useProductStore = create((set, get) => ({
   },
 
   // Helper to find a specific product by slug (better for SEO)
-  getProductBySlug: (slug) => {
-    return get().products.find((p) => p.slug === slug);
+  getProductBySlug: async (slug) => {
+    // 1. If products are already loaded, just find and return
+    const existing = get().products.find((p) => p.slug === slug);
+    if (existing) return existing;
+
+    // 2. If products array is empty, fetch them first
+    if (get().products.length === 0) {
+      set({ loading: true });
+      try {
+        const response = await API.get("/products");
+        const allProducts = response.data;
+
+        set({
+          products: allProducts,
+          magazines: allProducts.filter((p) => p.category === "Magazine"),
+          loading: false,
+        });
+
+        // 3. Now try to find it again from the fresh batch
+        return allProducts.find((p) => p.slug === slug);
+      } catch (err) {
+        set({ error: err.message, loading: false });
+        return null;
+      }
+    }
+
+    return null;
   },
 }));
 
