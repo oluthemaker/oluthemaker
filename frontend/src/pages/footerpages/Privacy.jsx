@@ -62,7 +62,7 @@ Depending on your location, you may have rights to:
 - Access, correct, or delete your personal information
 - Object to or restrict processing
 - Withdraw consent
-Contact us at support@oluthemaker.com for assistance.
+Contact us at info@oluthemaker.com for assistance.
     `,
   },
   {
@@ -90,7 +90,7 @@ be posted on this page with the effective date.
     title: "Contact Us",
     content: `
 If you have questions about this Privacy Policy, please contact us at
-support@oluthemaker.com.
+info@oluthemaker.com.
     `,
   },
 ];

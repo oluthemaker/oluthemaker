@@ -28,7 +28,7 @@ const SendMessage = () => {
             </p>
 
             <div className="space-y-4 text-sm font-sans tracking-widest uppercase opacity-60">
-              <p>Email: contact@oluthemaker.com</p>
+              <p>Email: info@oluthemaker.com</p>
               <p>Hours: Mon—Fri, 9am—6pm</p>
             </div>
           </div>
