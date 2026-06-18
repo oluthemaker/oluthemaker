@@ -40,8 +40,6 @@ export default function Blog() {
     searchBlogs,
   } = useBlogStore();
 
-  console.log(blogs);
-
   // Sync fetch with category changes
   useEffect(() => {
     // 1. Fetch the data
