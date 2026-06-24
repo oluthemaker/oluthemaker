@@ -14,7 +14,7 @@ const FeaturedBlogCard = ({ post }) => {
             <motion.img
               whileHover={{ scale: 1.03 }}
               transition={{ duration: 1.5, ease: [0.33, 1, 0.68, 1] }}
-              src={post.image}
+              src={post.headerImage}
               alt={post.title}
               className="w-full h-full object-cover"
             />
@@ -39,7 +39,7 @@ const FeaturedBlogCard = ({ post }) => {
             </p>
 
             <Link
-              to={`/blog/${post.slug}`}
+              to={`/journal/${post.slug}`}
               className="inline-block pt-4 text-[10px] tracking-[0.3em] uppercase font-sans font-bold border-b border-atelier-ink pb-1 hover:text-atelier-tan hover:border-atelier-tan transition-all"
             >
               Read the Full Entry

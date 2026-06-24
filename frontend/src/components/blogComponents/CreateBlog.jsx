@@ -31,8 +31,6 @@ const CreateBlog = () => {
     "our-advice",
   ];
 
-  console.log(currentBlog);
-
   const [formData, setFormData] = useState({
     title: "",
     description: "", // Added for grid excerpt

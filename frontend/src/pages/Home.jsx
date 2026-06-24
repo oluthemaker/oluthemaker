@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import FeaturedBlogCard from "../components/FeaturedBlogCard";
 import useBlogStore from "../store/useBlogStore";
@@ -19,10 +19,19 @@ const Home = () => {
     description: "The home of Africa's number one Bespoke and Menswear hub ",
   });
 
-  const { featuredBlog, fetchBlogs, loading } = useBlogStore();
+  const { featuredBlog, fetchBlogs, loading, blogs } = useBlogStore();
+  const [secondaryPost, setSecondaryPost] = useState(null);
   useEffect(() => {
     fetchBlogs();
   }, [fetchBlogs]);
+
+  useEffect(() => {
+    if (blogs.length > 0) {
+      setSecondaryPost(blogs[0]);
+    }
+  }, [blogs]);
+
+  console.log(secondaryPost);
 
   if (loading)
     return (
@@ -102,7 +111,7 @@ const Home = () => {
       </section>
 
       {/* 3. FEATURED BLOG CARD */}
-      <FeaturedBlogCard post={featuredPost} />
+      <FeaturedBlogCard post={secondaryPost} />
 
       {/* 4. THE BESPOKE EXPERIENCE */}
       <section className="relative py-32 bg-atelier-ink text-white overflow-hidden">

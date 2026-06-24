@@ -23,11 +23,12 @@ const BlogContentRenderer = ({ contentBlocks }) => {
             return (
               <TextWrapper key={index}>
                 <div
+                  // You can also consider removing overflow-wrap-anywhere if you don't have extremely long URLs
                   className="prose prose-atelier max-w-none font-serif text-lg leading-relaxed text-atelier-ink/90
-                             break-words overflow-wrap-anywhere"
+                                   break-words"
                   dangerouslySetInnerHTML={{
-                    // Removed the .replace(/\n/g, "<br />") because Quill handles paragraphs
-                    __html: block.content || "",
+                    // Replace non-breaking spaces with regular spaces so the browser wraps text naturally
+                    __html: (block.content || "").replace(/&nbsp;/g, " "),
                   }}
                 />
               </TextWrapper>

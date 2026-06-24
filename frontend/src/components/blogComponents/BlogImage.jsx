@@ -81,10 +81,11 @@ export const BlogImage = ({
         {/* Right Image Container */}
         <div className="flex-1 group w-full">
           <ImageWrapper link={pairWith.externalLink}>
-            <div className="w-full h-full object-cover transition-transform duration-1000 group-hover/link:scale-105">
+            <div className="overflow-hidden bg-atelier-ink/5 aspect-[4/5] md:aspect-[3/4]">
+              {" "}
               <img
                 src={optimizeUrl(pairWith.src, 1200)}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover transition-transform duration-1000 group-hover/link:scale-105"
               />
             </div>
           </ImageWrapper>
