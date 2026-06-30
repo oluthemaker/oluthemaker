@@ -17,6 +17,12 @@ body {
     width: 100%;
 }
 
+.lora-font {
+    font-family: "Lora", serif;
+    font-optical-sizing: auto;
+    font-style: italic;
+}
+
 @font-face {
     font-family: "Adobe Garamond Pro";
     src: url("/fonts/AdobeGaramondPro-Regular.woff2") format("woff2");
