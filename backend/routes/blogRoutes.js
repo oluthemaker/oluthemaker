@@ -7,12 +7,14 @@ import {
   searchBlogs,
   deleteBlog,
   updateBlog,
+  getDrafts,
 } from "../controllers/blogController.js";
 
 const router = express.Router();
 
 router.route("/").get(getBlogs).post(protect, admin, createBlog);
 router.get("/search", searchBlogs);
+router.get("/drafts", protect, admin, getDrafts);
 router.route("/:slug").get(getBlogBySlug).delete(protect, admin, deleteBlog);
 router.route("/:id").put(protect, admin, updateBlog);
 

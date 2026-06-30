@@ -8,6 +8,8 @@ export const createBlog = async (req, res) => {
     const blog = new Blog(req.body);
     const savedBlog = await blog.save();
 
+    console.log(req.body);
+
     // 2. Check if a magazine issue number was provided
     if (req.body.magazineIssue) {
       // Find the magazine product by category and issue number
@@ -32,7 +34,6 @@ export const createBlog = async (req, res) => {
 
 // @desc    Get all blogs with pagination
 // @desc    Get all blogs with pagination and category filtering
-// @desc    Get all blogs with pagination and category filtering
 export const getBlogs = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -40,18 +41,21 @@ export const getBlogs = async (req, res) => {
     const skip = (page - 1) * limit;
     const category = req.query.category;
 
-    // 1. ALWAYS fetch the main featured article (ignoring filters)
-    const featuredBlog = await Blog.findOne({ featured: true })
+    // 1. ALWAYS fetch the main featured article, but ensure it is published
+    const featuredBlog = await Blog.findOne({
+      featured: true,
+      status: "published",
+    })
       .populate("magazineRef", "name slug images")
       .sort({ publishedAt: -1 });
 
-    // 2. Build the query object for the rest of the archive grid
-    let query = {};
+    // 2. Build the query object (ONLY query published articles)
+    let query = { status: "published" };
+
     if (category) {
       query.category = category;
     }
 
-    // Optional but recommended: Prevent the featured article from duplicating in the grid below
     if (featuredBlog) {
       query._id = { $ne: featuredBlog._id };
     }
@@ -65,7 +69,6 @@ export const getBlogs = async (req, res) => {
 
     const total = await Blog.countDocuments(query);
 
-    // 4. Send the featured blog back as a separate piece of data
     res.json({
       featured: featuredBlog,
       blogs,
@@ -73,6 +76,16 @@ export const getBlogs = async (req, res) => {
       page,
       pages: Math.ceil(total / limit),
     });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const getDrafts = async (req, res) => {
+  try {
+    // Fetch all articles where status is draft, sorted by newest first
+    const drafts = await Blog.find({ status: "draft" }).sort({ updatedAt: -1 });
+    res.json({ blogs: drafts });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

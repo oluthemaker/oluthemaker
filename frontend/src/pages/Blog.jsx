@@ -120,14 +120,23 @@ export default function Blog() {
       <nav className="sticky top-0 z-[60] bg-atelier-paper/95 backdrop-blur-md border-y border-atelier-ink/10">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           {/* Admin Create Button - Displayed on the left of desktop menu or after burger */}
+          {/* Admin Create & Drafts Buttons */}
           {isAdmin && (
-            <Link
-              to="/journal/write"
-              className="flex items-center gap-2 mr-6 px-4 py-2 bg-atelier-ink text-atelier-paper text-[10px] tracking-widest uppercase hover:bg-atelier-tan transition-colors"
-            >
-              <FiPlus size={14} />
-              <span>New Entry</span>
-            </Link>
+            <div className="flex items-center gap-3 mr-6">
+              <Link
+                to="/journal/write"
+                className="flex items-center gap-2 px-4 py-2 bg-atelier-ink text-atelier-paper text-[10px] tracking-widest uppercase hover:bg-atelier-tan transition-colors"
+              >
+                <FiPlus size={14} />
+                <span>New Entry</span>
+              </Link>
+              <Link
+                to="/journal/drafts"
+                className="flex items-center gap-2 px-4 py-2 border border-atelier-ink/20 text-atelier-ink text-[10px] tracking-widest uppercase hover:bg-atelier-ink hover:text-atelier-paper transition-all"
+              >
+                <span>Drafts</span>
+              </Link>
+            </div>
           )}
           {/* Mobile Menu Toggle & Desktop Categories */}
           <div className="flex items-center">

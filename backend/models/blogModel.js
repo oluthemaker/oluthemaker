@@ -38,6 +38,11 @@ const blogSchema = new mongoose.Schema(
     featuredPost: { type: Boolean, default: false },
     category: { type: String, required: true }, // e.g., "Atelier Notes"
     contentBlocks: [contentBlockSchema],
+    status: {
+      type: String,
+      enum: ["draft", "published"],
+      default: "draft",
+    },
     credits: [
       {
         role: { type: String }, // e.g., "Photography"

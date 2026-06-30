@@ -31,8 +31,6 @@ const Home = () => {
     }
   }, [blogs]);
 
-  console.log(secondaryPost);
-
   if (loading)
     return (
       <div className="min-h-screen flex items-center justify-center bg-atelier-paper">

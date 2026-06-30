@@ -22,6 +22,7 @@ const CreateBlog = () => {
   const { fetchBlogBySlug, currentBlog, createBlog, updateBlog } =
     useBlogStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitAction, setSubmitAction] = useState("published"); // Add this near your other state
 
   const categories = [
     "all",
@@ -120,10 +121,14 @@ const CreateBlog = () => {
         );
 
       if (slug) {
-        await updateBlog(currentBlog._id, formData); // Use ID for the backend update
+        await updateBlog(currentBlog._id, {
+          ...formData,
+          status: submitAction,
+        });
       } else {
         const blogData = {
           ...formData,
+          status: submitAction,
           headerImage: formData.headerImageUrl,
           innerImageForFeatured: formData.innerImageForFeaturedUrl,
           slug: slugify(formData.title),
@@ -131,7 +136,7 @@ const CreateBlog = () => {
         };
         await createBlog(blogData, user.token);
       }
-      navigate(`/journal`);
+      navigate(submitAction === "draft" ? `/journal/drafts` : `/journal`);
     } catch (err) {
       alert(`Error: ${err.message}`);
     } finally {
@@ -590,10 +595,19 @@ const CreateBlog = () => {
           <div className="flex justify-end gap-6 pt-12 border-t border-atelier-ink/10">
             <button
               type="submit"
+              onClick={() => setSubmitAction("draft")}
+              disabled={isSubmitting}
+              className="px-10 py-4 border border-atelier-ink text-atelier-ink text-[10px] tracking-[0.3em] uppercase hover:bg-atelier-ink hover:text-white transition-all"
+            >
+              Save as Draft
+            </button>
+            <button
+              type="submit"
+              onClick={() => setSubmitAction("published")}
               disabled={isSubmitting}
               className="px-10 py-4 bg-atelier-ink text-white text-[10px] tracking-[0.3em] uppercase hover:bg-atelier-ink/90 transition-all"
             >
-              {isSubmitting ? "Archiving..." : "Publish to Archive"}
+              {isSubmitting ? "Processing..." : "Publish to Archive"}
             </button>
           </div>
         </form>

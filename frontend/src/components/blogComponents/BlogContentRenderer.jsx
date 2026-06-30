@@ -19,15 +19,19 @@ const BlogContentRenderer = ({ contentBlocks }) => {
         );
 
         switch (block.type) {
+          // This is your RENDER code (not the editor)
           case "text":
             return (
               <TextWrapper key={index}>
                 <div
-                  // You can also consider removing overflow-wrap-anywhere if you don't have extremely long URLs
-                  className="prose prose-atelier max-w-none font-serif text-lg leading-relaxed text-atelier-ink/90
-                                   break-words"
+                  className={`prose prose-atelier max-w-none font-serif text-lg leading-relaxed text-atelier-ink/90 break-words
+                    ${
+                      index === 0 // Only apply to the first text block in the article
+                        ? "first-letter:text-6xl first-letter:font-bold first-letter:float-left first-letter:mr-4 first-letter:-mt-1"
+                        : ""
+                    }
+                  `}
                   dangerouslySetInnerHTML={{
-                    // Replace non-breaking spaces with regular spaces so the browser wraps text naturally
                     __html: (block.content || "").replace(/&nbsp;/g, " "),
                   }}
                 />

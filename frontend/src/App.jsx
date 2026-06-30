@@ -11,6 +11,7 @@ import ProductDetail from "./components/ProductDetail";
 import ProtectedRoute from "./components/admin/ProtectedRoute";
 import SingleBlogPost from "./components/blogComponents/SingleBlogPost";
 import CreateBlog from "./components/blogComponents/CreateBlog";
+import DraftsList from "./components/blogComponents/DraftsList";
 
 //Pages
 import Home from "./pages/Home";
@@ -96,6 +97,7 @@ function App() {
               {/* 1. Admin Routes First (Specific matches) */}
               <Route element={<ProtectedRoute adminOnly={true} />}>
                 <Route path="write" element={<CreateBlog />} />
+                <Route path="drafts" element={<DraftsList />} />
                 <Route path="edit/:slug" element={<CreateBlog />} />
               </Route>
 

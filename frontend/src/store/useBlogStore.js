@@ -41,6 +41,30 @@ const useBlogStore = create((set) => ({
       });
     }
   },
+  // Add this inside useBlogStore, right below fetchBlogs
+  fetchDrafts: async () => {
+    set({ loading: true, error: null });
+    try {
+      // Need token since drafts should be protected
+      const token = useUserStore.getState().user?.token;
+
+      const { data } = await API.get(`/blogs/drafts`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      set({
+        blogs: data.blogs,
+        loading: false,
+      });
+    } catch (err) {
+      set({
+        error: err.response?.data?.message || err.message,
+        loading: false,
+      });
+    }
+  },
 
   // Fetch single blog by slug
   fetchBlogBySlug: async (slug) => {
