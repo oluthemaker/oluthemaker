@@ -30,6 +30,7 @@ const CreateBlog = () => {
     "masters-of-the-craft",
     "moving-hands",
     "our-advice",
+    "tools-of-the-trade",
   ];
 
   const [formData, setFormData] = useState({

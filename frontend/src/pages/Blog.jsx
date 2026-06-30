@@ -28,6 +28,7 @@ export default function Blog() {
     "masters-of-the-craft",
     "moving-hands",
     "our-advice",
+    "tools-of-the-trade",
   ];
 
   const {
@@ -159,7 +160,7 @@ export default function Blog() {
                       : "opacity-50 hover:opacity-100"
                   }`}
                 >
-                  {cat.replace("-", " ")}
+                  {cat.replace(/-/g, " ")}
                 </li>
               ))}
             </ul>
@@ -204,7 +205,7 @@ export default function Blog() {
                     : "opacity-60"
                 }`}
               >
-                {cat.replace("-", " ")}
+                {cat.replace(/-/g, " ")}
               </li>
             ))}
           </ul>
@@ -221,7 +222,7 @@ export default function Blog() {
             Archive Collection
           </span>
           <h2 className="text-5xl font-serif italic capitalize">
-            {selectedCategory.replace("-", " ")}
+            {selectedCategory.replace(/-/g, " ")}
           </h2>
         </div>
 

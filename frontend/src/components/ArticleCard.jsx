@@ -15,7 +15,7 @@ const ArticleCard = ({ article }) => {
         {/* Subtle category overlay */}
         <div className="absolute top-4 left-4">
           <span className="bg-atelier-paper/90 px-3 py-1 text-[8px] tracking-[0.2em] uppercase text-atelier-ink">
-            {article.category?.replace("-", " ")}
+            {article.category?.replace(/-/g, " ")}
           </span>
         </div>
       </div>

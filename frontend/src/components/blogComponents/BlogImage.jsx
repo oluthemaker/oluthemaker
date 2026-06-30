@@ -52,7 +52,7 @@ export const BlogImage = ({
 
   const Caption = ({ text, className = "" }) => (
     <figcaption
-      className={`mt-4 text-[10px] tracking-[0.2em] uppercase font-sans text-atelier-ink/50 text-center px-6 ${className}`}
+      className={`text-[12px] tracking-[0.2em] font-serif italic black text-center px-6 py-4 ${className}`}
     >
       {text}
     </figcaption>
