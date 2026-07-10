@@ -4,6 +4,21 @@ import { useForm } from "@formspree/react";
 import { Instagram, Youtube, Facebook } from "lucide-react";
 import AnalogClock from "../components/AnalogClock"; // Ensure path is correct
 
+export const TikTokIcon = ({ size = 24, color = "currentColor" }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={color}
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M9 12a4 4 0 1 0 4 4V4a4 4 0 0 0-4 4" />
+  </svg>
+);
+
 const Footer = ({ navLinks = [] }) => {
   const [state, handleSubmit] = useForm("xeokgazj");
 
@@ -88,16 +103,16 @@ const Footer = ({ navLinks = [] }) => {
 
         {/* Social Icons using Lucide for consistency */}
         <div className="flex gap-8">
-          <a href="#" className="hover:text-atelier-tan transition-colors">
+          <a
+            href="https://instagram.com/oluthemaker"
+            className="hover:text-atelier-tan transition-colors"
+          >
             <Instagram size={20} strokeWidth={1.2} />
           </a>
-          <a href="#" className="hover:text-atelier-tan transition-colors">
-            <Facebook size={20} strokeWidth={1.2} />
-          </a>
-          <a href="#" className="hover:text-atelier-tan transition-colors">
-            <Youtube size={20} strokeWidth={1.2} />
-          </a>
-          <a href="#" className="hover:text-atelier-tan transition-colors">
+          <a
+            href="https://x.com/oluthemaker"
+            className="hover:text-atelier-tan transition-colors"
+          >
             {/* X/Twitter custom SVG */}
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
               <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
