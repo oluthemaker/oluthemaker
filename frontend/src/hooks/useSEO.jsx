@@ -21,7 +21,7 @@ const useSEO = ({ title, description, ogImage, ogType = "website" }) => {
 
     // 4. Open Graph Tags (For WhatsApp/Social Sharing)
     const url = window.location.href;
-    setMetaTag("property", "og:title", `${title} | Abeg Fix`);
+    setMetaTag("property", "og:title", `${title} | Olú the Maker`);
     setMetaTag("property", "og:description", description);
     setMetaTag("property", "og:url", url);
     setMetaTag("property", "og:type", ogType);
