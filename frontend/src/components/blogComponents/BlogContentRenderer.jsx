@@ -67,6 +67,45 @@ const BlogContentRenderer = ({ contentBlocks }) => {
                 }}
               />
             );
+            case "table":
+                        return (
+                          <TextWrapper key={index}>
+                            <div className="my-8 w-full">
+                              <div className="overflow-x-auto border-y border-atelier-ink/10 py-2">
+                                <table className="w-full border-collapse text-left text-sm">
+                                  <thead>
+                                    <tr className="border-b border-atelier-ink/20">
+                                      {block.headers?.map((header, hIdx) => (
+                                        <th
+                                          key={hIdx}
+                                          className="pb-3 pt-2 font-serif italic text-xs text-atelier-ink/60 uppercase tracking-wider font-semibold"
+                                        >
+                                          {header}
+                                        </th>
+                                      ))}
+                                    </tr>
+                                  </thead>
+                                  <tbody className="divide-y divide-atelier-ink/5 text-atelier-ink/80 font-sans">
+                                    {block.rows?.map((row, rIdx) => (
+                                      <tr key={rIdx} className="hover:bg-atelier-ink/[0.01] transition-colors">
+                                        {row.map((cell, cIdx) => (
+                                          <td key={cIdx} className="py-3 pr-4 align-top leading-relaxed">
+                                            {cell || <span className="text-atelier-ink/20">—</span>}
+                                          </td>
+                                        ))}
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                              {block.caption && (
+                                <p className="mt-3 text-[10px] tracking-wider uppercase text-atelier-ink/40 text-center font-sans font-medium">
+                                  {block.caption}
+                                </p>
+                              )}
+                            </div>
+                          </TextWrapper>
+                        );
           default:
             return null;
         }

@@ -5,7 +5,7 @@ const contentBlockSchema = new mongoose.Schema(
     type: {
       type: String,
       required: true,
-      enum: ["text", "image", "pull-quote", "side-by-side-images"],
+      enum: ["text", "image", "pull-quote", "side-by-side-images", "table"],
     },
     content: { type: String }, // For text and quotes
     src: { type: String }, // For single images
@@ -22,7 +22,9 @@ const contentBlockSchema = new mongoose.Schema(
         externalLink: { type: String },
       },
     ],
-    author: { type: String }, // For quote citations
+    author: { type: String },
+    headers: [{ type: String }],          // Flat array of strings: ["Size", "Quantity"]
+        rows: [[{ type: String }]],
   },
   { _id: false },
 );

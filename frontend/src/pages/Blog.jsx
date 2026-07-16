@@ -29,6 +29,7 @@ export default function Blog() {
     "moving-hands",
     "our-advice",
     "tools-of-the-trade",
+    "reports",
   ];
 
   const {
