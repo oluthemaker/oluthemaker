@@ -5,16 +5,36 @@ import {
   FiTrash2,
   FiImage,
   FiType,
-  FiUpload,
   FiBookOpen,
   FiColumns,
   FiTable
 } from "react-icons/fi";
+
 import useBlogStore from "../../store/useBlogStore";
 import useUserStore from "../../store/useUserStore";
 import { slugify } from "../../utils/slugify";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
+import BlockToolbar from "./BlockToolbar";
+import TextBlock from "./TextBlock";
+import ImageBlock from "./ImageBlock";
+import SideBySide from "./SideBySide";
+import PullQuoteBlock from "./PullQuoteBlock";
+import TableBlock from "./TableBlock";
+import SortableBlock from "./SortableBlock";
+
+
+import {
+  DndContext,
+  closestCenter,
+} from "@dnd-kit/core";
+
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  arrayMove,
+} from "@dnd-kit/sortable";
+
 
 const CreateBlog = () => {
   const navigate = useNavigate();
@@ -91,6 +111,64 @@ const CreateBlog = () => {
     }));
   };
 
+  const duplicateBlock = (index) => {
+    setFormData(prev => {
+
+      const blocks = [...prev.contentBlocks];
+
+      const copy = structuredClone(blocks[index]);
+
+      copy.id = crypto.randomUUID();
+
+      blocks.splice(index + 1, 0, copy);
+
+      return {
+        ...prev,
+        contentBlocks: blocks,
+      };
+    });
+  };
+
+  const moveBlock = (index, direction) => {
+      setFormData(prev => {
+          const blocks = [...prev.contentBlocks];
+          const newIndex = index + direction;
+          if (
+              newIndex < 0 ||
+              newIndex >= blocks.length
+          )
+              return prev;
+          [blocks[index], blocks[newIndex]] =
+              [blocks[newIndex], blocks[index]];
+          return {
+              ...prev,
+              contentBlocks: blocks,
+          };
+      });
+  };
+
+  const handleDragEnd = ({ active, over }) => {
+    if (!over || active.id === over.id) return;
+
+    setFormData(prev => {
+      const oldIndex = prev.contentBlocks.findIndex(
+        block => block.id === active.id
+      );
+
+      const newIndex = prev.contentBlocks.findIndex(
+        block => block.id === over.id
+      );
+
+      return {
+        ...prev,
+        contentBlocks: arrayMove(
+          prev.contentBlocks,
+          oldIndex,
+          newIndex
+        ),
+      };
+    });
+  };
   // Cloudinary Upload Logic
   const handleFileUpload = async (file, callback) => {
     const uploadFormData = new FormData();
@@ -155,34 +233,42 @@ const CreateBlog = () => {
     });
   };
 
+  const createBlock = (block) => ({
+      id: crypto.randomUUID(),
+      ...block,
+  });
+
   const addBlock = (type) => {
     const defaults = {
-      text: { type: "text", content: "" },
-      image: {
+      text: createBlock({
+             type: "text",
+             content: "",
+         }),
+      image: createBlock({
         type: "image",
         src: "",
         externalLink: "",
         alt: "",
         layout: "default",
         caption: "",
-      },
-      "pull-quote": { type: "pull-quote", content: "", author: "" },
-      "side-by-side-images": {
+      }),
+      "pull-quote": createBlock({ type: "pull-quote", content: "", author: "" }),
+      "side-by-side-images": createBlock({
         type: "side-by-side-images",
         images: [
           { src: "", alt: "", caption: "", externalLink: "" },
           { src: "", alt: "", caption: "", externalLink: "" },
         ],
-      },
-      table: {
-              type: "table",
-              headers: ["Column 1", "Column 2"],
-              rows: [
-                ["", ""],
-                ["", ""],
-              ],
-              caption: "",
-            },
+      }),
+      table: createBlock({
+        type: "table",
+        headers: ["Column 1", "Column 2"],
+        rows: [
+          ["", ""],
+          ["", ""],
+        ],
+        caption: "",
+      }),
     };
     setFormData((prev) => ({
       ...prev,
@@ -420,324 +506,91 @@ const CreateBlog = () => {
                 </button>
               </div>
             </div>
-
-            {formData.contentBlocks.map((block, index) => (
-              <div
-                key={index}
-                className="group relative border border-atelier-ink/10 p-8 bg-white/30"
-              >
-                <button
-                  type="button"
-                  onClick={() =>
-                    setFormData((p) => ({
-                      ...p,
-                      contentBlocks: p.contentBlocks.filter(
-                        (_, i) => i !== index,
-                      ),
-                    }))
-                  }
-                  className="absolute top-4 right-4 text-atelier-ink/30 hover:text-red-600 transition-colors"
+            <DndContext
+                   collisionDetection={closestCenter}
+                   onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                       items={formData.contentBlocks.map(
+                           block => block.id
+                       )}
+                       strategy={verticalListSortingStrategy}
+            >
+          {formData.contentBlocks.map((block, index) => (
+          <SortableBlock
+                 key={block.id}
+                 id={block.id}
+             >
+              {({ listeners, attributes }) => (
+                <div
+                  key={block.id ?? index}
+                  className="group relative border border-atelier-ink/10 p-8 bg-white/30"
                 >
-                  <FiTrash2 />
-                </button>
-                {block.type === "text" && (
-                  <ReactQuill
-                    theme="snow"
-                    value={block.content}
-                    onChange={(val) =>
-                      updateContentBlock(index, { content: val })
-                    }
+                  <BlockToolbar
+                    dragListeners={listeners}
+                    dragAttributes={attributes}
+                   title={block.type.replace("-", " ")}
+                   onMoveUp={() => moveBlock(index, -1)}
+                   onMoveDown={() => moveBlock(index, 1)}
+                   onDelete={() =>
+                       setFormData(prev => ({
+                           ...prev,
+                           contentBlocks: prev.contentBlocks.filter(
+                               (_, i) => i !== index
+                           )
+                       }))
+                   }
+                   onDuplicate={() => duplicateBlock(index)}
+               />
+               {block.type === "text" && (
+                   <TextBlock
+                       block={block}
+                       index={index}
+                       updateContentBlock={updateContentBlock}
+                   />
+               )}
+                {block.type === "image" && (
+                  <ImageBlock
+                    block={block}
+                    index={index}
+                    updateContentBlock={updateContentBlock}
+                    handleFileUpload={handleFileUpload}
                   />
                 )}
-                {block.type === "image" && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="border border-dashed border-atelier-ink/20 p-4 text-center">
-                      {block.src ? (
-                        <img
-                          src={block.src}
-                          className="h-32 mx-auto object-cover"
-                        />
-                      ) : (
-                        <input
-                          type="file"
-                          onChange={(e) =>
-                            handleFileUpload(e.target.files[0], (url) =>
-                              updateContentBlock(index, { src: url }),
-                            )
-                          }
-                        />
-                      )}
-                    </div>
-                    <div className="space-y-4">
-                      <select
-                        className="w-full bg-transparent border-b border-atelier-ink/20 text-xs py-2"
-                        value={block.layout}
-                        onChange={(e) =>
-                          updateContentBlock(index, { layout: e.target.value })
-                        }
-                      >
-                        <option value="default">Default</option>
-                        <option value="wide">Wide</option>
-                        <option value="fullBleed">Full Bleed</option>
-                      </select>
-                      <input
-                        placeholder="External Link (Optional)..."
-                        className="w-full bg-transparent border-b border-atelier-ink/20 text-xs py-2"
-                        value={block.externalLink || ""}
-                        onChange={(e) =>
-                          updateContentBlock(index, {
-                            externalLink: e.target.value,
-                          })
-                        }
-                      />
-                      <input
-                        placeholder="Caption..."
-                        className="w-full bg-transparent border-b border-atelier-ink/20 text-xs py-2 italic font-serif"
-                        value={block.caption}
-                        onChange={(e) =>
-                          updateContentBlock(index, { caption: e.target.value })
-                        }
-                      />
-                    </div>
-                  </div>
-                )}
-                {/* --- SIDE-BY-SIDE RENDERER --- */}
                 {block.type === "side-by-side-images" && (
-                  <div className="space-y-6">
-                    <div className="flex items-center justify-between border-b border-atelier-ink/5 pb-2">
-                      <span className="text-[10px] tracking-[0.3em] uppercase text-atelier-tan font-bold">
-                        Asymmetric Pair Layout
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-12 gap-8 items-start">
-                      {/* Left Image - Larger/Dominant (7/12 cols) */}
-                      <div className="col-span-7 space-y-4">
-                        <div className="border border-atelier-ink/10 aspect-[3/4] flex items-center justify-center bg-white overflow-hidden shadow-sm">
-                          {block.images[0].src ? (
-                            <img
-                              src={block.images[0].src}
-                              className="w-full h-full object-cover "
-                            />
-                          ) : (
-                            <div className="p-4 text-center">
-                              <input
-                                type="file"
-                                className="text-[10px] w-full"
-                                onChange={(e) =>
-                                  handleFileUpload(e.target.files[0], (url) => {
-                                    const newImgs = [...block.images];
-                                    newImgs[0].src = url;
-                                    updateContentBlock(index, {
-                                      images: newImgs,
-                                    });
-                                  })
-                                }
-                              />
-                              <p className="text-[9px] mt-2 opacity-40 uppercase tracking-tighter">
-                                Primary Feature (Left)
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                        <input
-                          placeholder="Primary Caption..."
-                          className="w-full bg-transparent border-b border-atelier-ink/10 text-[10px] py-2 italic font-serif"
-                          value={block.images[0].caption}
-                          onChange={(e) => {
-                            const newImgs = [...block.images];
-                            newImgs[0].caption = e.target.value;
-                            updateContentBlock(index, { images: newImgs });
-                          }}
-                        />
-                      </div>
-
-                      {/* Right Image - Narrower/Supportive (5/12 cols) */}
-                      <div className="col-span-5 space-y-4 pt-12">
-                        {" "}
-                        {/* pt-12 creates that staggered look */}
-                        <div className="border border-atelier-ink/10 aspect-[4/5] flex items-center justify-center bg-white overflow-hidden shadow-sm">
-                          {block.images[1].src ? (
-                            <img
-                              src={block.images[1].src}
-                              className="w-full h-full object-cover "
-                            />
-                          ) : (
-                            <div className="p-4 text-center">
-                              <input
-                                type="file"
-                                className="text-[10px] w-full"
-                                onChange={(e) =>
-                                  handleFileUpload(e.target.files[0], (url) => {
-                                    const newImgs = [...block.images];
-                                    newImgs[1].src = url;
-                                    updateContentBlock(index, {
-                                      images: newImgs,
-                                    });
-                                  })
-                                }
-                              />
-                              <p className="text-[9px] mt-2 opacity-40 uppercase tracking-tighter">
-                                Secondary Detail (Right)
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                        <input
-                          placeholder="Secondary Caption..."
-                          className="w-full bg-transparent border-b border-atelier-ink/10 text-[10px] py-2 italic font-serif"
-                          value={block.images[1].caption}
-                          onChange={(e) => {
-                            const newImgs = [...block.images];
-                            newImgs[1].caption = e.target.value;
-                            updateContentBlock(index, { images: newImgs });
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </div>
+                  <SideBySide
+                    block={block}
+                    index={index}
+                    updateContentBlock={updateContentBlock}
+                    handleFileUpload={handleFileUpload}
+                  />
                 )}
 
                 {block.type === "pull-quote" && (
-                  <textarea
-                    placeholder="Enter the pull quote..."
-                    className="w-full bg-transparent text-xl font-serif italic text-center outline-none border-none resize-none"
-                    value={block.content}
-                    onChange={(e) =>
-                      updateContentBlock(index, { content: e.target.value })
-                    }
+                  <PullQuoteBlock
+                    block={block}
+                    index={index}
+                    updateContentBlock={updateContentBlock}
                   />
                 )}
                 {/* --- TABLE BLOCK RENDERER --- */}
                 {block.type === "table" && (
-                  <div className="space-y-6">
-                    <div className="flex items-center justify-between border-b border-atelier-ink/5 pb-2">
-                      <span className="text-[10px] tracking-[0.3em] uppercase text-atelier-tan font-bold">
-                        Editorial Table
-                      </span>
-                    </div>
-
-                    {/* Table Interface */}
-                    <div className="overflow-x-auto border border-atelier-ink/10 bg-white/50 p-4">
-                      <table className="w-full text-left border-collapse">
-                        <thead>
-                          <tr className="border-b border-atelier-ink/20">
-                            {block.headers.map((header, hIdx) => (
-                              <th key={hIdx} className="p-2">
-                                <input
-                                  type="text"
-                                  value={header}
-                                  onChange={(e) => {
-                                    const newHeaders = [...block.headers];
-                                    newHeaders[hIdx] = e.target.value;
-                                    updateContentBlock(index, { headers: newHeaders });
-                                  }}
-                                  className="w-full bg-transparent font-serif italic text-xs border-b border-transparent focus:border-atelier-ink/20 outline-none pb-1"
-                                  placeholder={`Header ${hIdx + 1}`}
-                                />
-                              </th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {block.rows.map((row, rIdx) => (
-                            <tr key={rIdx} className="border-b border-atelier-ink/5 hover:bg-atelier-ink/[0.02]">
-                              {row.map((cell, cIdx) => (
-                                <td key={cIdx} className="p-2">
-                                  <input
-                                    type="text"
-                                    value={cell}
-                                    onChange={(e) => {
-                                      const newRows = block.rows.map((r, ri) =>
-                                        ri === rIdx
-                                          ? r.map((c, ci) => (ci === cIdx ? e.target.value : c))
-                                          : r
-                                      );
-                                      updateContentBlock(index, { rows: newRows });
-                                    }}
-                                    className="w-full bg-transparent text-xs outline-none py-1"
-                                    placeholder="—"
-                                  />
-                                </td>
-                              ))}
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-
-                    {/* Table Layout Controls */}
-                    <div className="flex flex-wrap gap-4 text-[10px] tracking-wider uppercase">
-                      {/* Row Controls */}
-                      <div className="flex gap-2">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const newRow = Array(block.headers.length).fill("");
-                            updateContentBlock(index, { rows: [...block.rows, newRow] });
-                          }}
-                          className="px-3 py-1.5 border border-atelier-ink/10 hover:border-atelier-ink hover:bg-white transition-all"
-                        >
-                          + Add Row
-                        </button>
-                        <button
-                          type="button"
-                          disabled={block.rows.length <= 1}
-                          onClick={() => {
-                            if (block.rows.length > 1) {
-                              updateContentBlock(index, { rows: block.rows.slice(0, -1) });
-                            }
-                          }}
-                          className="px-3 py-1.5 border border-atelier-ink/10 hover:border-red-500 hover:text-red-500 disabled:opacity-30 disabled:pointer-events-none transition-all"
-                        >
-                          - Remove Row
-                        </button>
-                      </div>
-
-                      {/* Column Controls */}
-                      <div className="flex gap-2">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const newHeaders = [...block.headers, `Col ${block.headers.length + 1}`];
-                            const newRows = block.rows.map((row) => [...row, ""]);
-                            updateContentBlock(index, { headers: newHeaders, rows: newRows });
-                          }}
-                          className="px-3 py-1.5 border border-atelier-ink/10 hover:border-atelier-ink hover:bg-white transition-all"
-                        >
-                          + Add Column
-                        </button>
-                        <button
-                          type="button"
-                          disabled={block.headers.length <= 1}
-                          onClick={() => {
-                            if (block.headers.length > 1) {
-                              const newHeaders = block.headers.slice(0, -1);
-                              const newRows = block.rows.map((row) => row.slice(0, -1));
-                              updateContentBlock(index, { headers: newHeaders, rows: newRows });
-                            }
-                          }}
-                          className="px-3 py-1.5 border border-atelier-ink/10 hover:border-red-500 hover:text-red-500 disabled:opacity-30 disabled:pointer-events-none transition-all"
-                        >
-                          - Remove Column
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Table Caption */}
-                    <input
-                      placeholder="Table Caption or Citation..."
-                      className="w-full bg-transparent border-b border-atelier-ink/10 text-[10px] py-2 italic font-serif"
-                      value={block.caption || ""}
-                      onChange={(e) =>
-                        updateContentBlock(index, { caption: e.target.value })
-                      }
-                    />
-                  </div>
+                  <TableBlock
+                    block={block}
+                    index={index}
+                    updateContentBlock={updateContentBlock}
+                  />
                 )}
               </div>
+                  )}
+             </SortableBlock>
+
             ))}
+              </SortableContext>
+            </DndContext>
           </div>
+
+
 
           <div className="flex justify-end gap-6 pt-12 border-t border-atelier-ink/10">
             <button
