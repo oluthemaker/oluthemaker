@@ -48,9 +48,14 @@ const BlogContentRenderer = ({ contentBlocks }) => {
                 caption={block.caption}
               />
             );
-
-          case "pull-quote":
-            return <PullQuote key={index} text={block.content || ""} />;
+            case "pull-quote":
+              return (
+                <PullQuote
+                  key={index}
+                  text={block.content || ""}
+                  author={block.author}
+                />
+              );
 
           case "side-by-side-images":
             return (

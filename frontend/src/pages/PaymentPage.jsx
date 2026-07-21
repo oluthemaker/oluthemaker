@@ -29,7 +29,7 @@ const PaymentPage = () => {
   const handlePayment = () => {
     // Logic to trigger Flutterwave checkout using order.totalPrice
     // and then call your /api/orders/:id/pay route on success
-    console.log("Triggering Flutterwave for order:", orderId);
+    //console.log("Triggering Flutterwave for order:", orderId);
   };
 
   if (loading)

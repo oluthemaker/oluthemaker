@@ -73,7 +73,7 @@ export const createProduct = async (req, res) => {
     const createdProduct = await product.save();
     res.status(201).json(createdProduct);
   } catch (error) {
-    console.log(error.errors); // This will list every field that failed validation
+    //console.log(error.errors); // This will list every field that failed validation
     res.status(400).json({ message: error.message });
   }
 };

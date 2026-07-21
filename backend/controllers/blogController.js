@@ -8,8 +8,6 @@ export const createBlog = async (req, res) => {
     const blog = new Blog(req.body);
     const savedBlog = await blog.save();
 
-    console.log(req.body);
-
     // 2. Check if a magazine issue number was provided
     if (req.body.magazineIssue) {
       // Find the magazine product by category and issue number

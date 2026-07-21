@@ -78,7 +78,7 @@ export const sendEmail = async (type, to, data) => {
       return null;
     }
 
-    console.log("✅ Email sent successfully:", responseData);
+    //console.log("✅ Email sent successfully:", responseData);
     return responseData;
   } catch (err) {
     console.error("❌ Mailer Execution Error:", err);
