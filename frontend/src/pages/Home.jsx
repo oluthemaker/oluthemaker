@@ -1,26 +1,20 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import FeaturedBlogCard from "../components/FeaturedBlogCard";
+import GalleryModal from "../components/GalleryModal";
 import useBlogStore from "../store/useBlogStore";
 import useSEO from "../hooks/useSEO";
 
 const Home = () => {
-  const featuredPost = {
-    title: "The Anatomy of a Hand-Welted Sole",
-    excerpt:
-      "Behind the scenes of our signature construction method, where 200 steps define a single pair.",
-    image:
-      "https://images.unsplash.com/photo-1603191659812-ee978eeeef76?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    slug: "anatomy-of-hand-welting",
-  };
-
   useSEO({
     title: "Home",
-    description: "The home of Africa's number one Bespoke and Menswear hub ",
+    description: "The home of Africa's number one Commissioned Shoes and Menswear hub",
   });
 
   const { featuredBlog, fetchBlogs, loading, blogs } = useBlogStore();
   const [secondaryPost, setSecondaryPost] = useState(null);
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+
   useEffect(() => {
     fetchBlogs();
   }, [fetchBlogs]);
@@ -42,9 +36,8 @@ const Home = () => {
 
   return (
     <div className="bg-atelier-paper text-atelier-ink">
-      {/* HERO SECTION: THE LEAD STORY */}
+      {/* 1. HERO SECTION: THE LEAD STORY */}
       <section className="h-screen lg:min-h-[900px] xl:min-h-[1100px] relative overflow-hidden flex items-center">
-        {" "}
         <img
           src={featuredBlog?.headerImage}
           alt="Hero"
@@ -60,7 +53,6 @@ const Home = () => {
             {featuredBlog?.title.split(":")[0]}:
             <br />
             <span className="not-italic">
-              {" "}
               {featuredBlog?.title.split(":")[1]}
             </span>
           </h1>
@@ -78,47 +70,17 @@ const Home = () => {
         </div>
       </section>
 
-      {/* SECONDARY FEATURE: THE COLLECTION */}
-      <section className="relative h-[85vh] w-full group overflow-hidden bg-atelier-ink">
-        <Link to="/store">
-          <img
-            src="https://images.unsplash.com/photo-1616406432452-07bc5938759d"
-            alt="Featured Collection"
-            className="absolute inset-0 w-full h-full object-cover opacity-80"
-          />
-          <div className="absolute inset-0 bg-atelier-ink/20 group-hover:bg-transparent transition-colors duration-700" />
-
-          <div className="absolute inset-0 p-12 flex flex-col justify-between border-[1px] border-white/10 m-6 pointer-events-none">
-            <div className="flex justify-between items-start">
-              <h2 className="text-white text-[10px] tracking-[0.5em] uppercase font-sans font-bold">
-                Curation 01
-              </h2>
-              <span className="text-white/40 font-serif italic">Est. 2026</span>
-            </div>
-
-            <div className="flex flex-col items-start gap-6 pointer-events-auto">
-              <h3 className="text-white text-4xl md:text-6xl font-serif italic tracking-tighter">
-                Ready-to-Wear
-              </h3>
-              <button className="px-8 py-3 bg-white text-atelier-ink text-[10px] tracking-[0.3em] font-sans font-bold hover:bg-atelier-tan transition-colors uppercase">
-                Discover More
-              </button>
-            </div>
-          </div>
-        </Link>
-      </section>
-
       {/* 3. FEATURED BLOG CARD */}
       <FeaturedBlogCard post={secondaryPost} />
 
-      {/* 4. THE BESPOKE EXPERIENCE */}
+      {/* 4. THE COMMISSIONED SHOES EXPERIENCE */}
       <section className="relative py-32 bg-atelier-ink text-white overflow-hidden">
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-24 items-center">
           {/* Left: Image Box */}
           <div className="relative aspect-[4/3] w-full group">
             <img
               src="https://res.cloudinary.com/ds78nckog/image/upload/v1778754634/moreimages_yhut1e.jpg"
-              alt="Bespoke Shoemaking"
+              alt="Commissioned Shoes"
               className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-700"
             />
             <div className="absolute inset-0 border border-white/10 m-4 pointer-events-none" />
@@ -128,30 +90,84 @@ const Home = () => {
           <div className="space-y-8">
             <div className="flex items-center gap-4">
               <span className="text-[10px] tracking-[0.4em] uppercase font-sans font-bold text-atelier-tan">
-                Bespoke
+                Commission
               </span>
               <div className="h-[1px] w-12 bg-atelier-tan/30" />
             </div>
 
             <h2 className="text-4xl md:text-6xl font-serif italic tracking-tighter leading-[1.1]">
-              The Bespoke <br />
-              <span className="not-italic text-white/90">Commission</span>
+              The Commission <br />
+              <span className="not-italic text-white/90"></span>
             </h2>
 
             <p className="text-lg font-serif italic opacity-70 leading-relaxed max-w-md">
-              A personal dialogue between maker and wearer. We sculpt the last
+              A personal dialogue between maker and customer. We sculpt the last
               to your exact measurements, ensuring an uncompromised fit and a
               truly singular design.
             </p>
 
             <div className="pt-6">
               <Link
-                to="/bespoke"
+                to="/commission"
                 className="inline-block px-10 py-4 border border-white text-white text-[10px] tracking-[0.3em] font-sans font-bold hover:bg-white hover:text-atelier-ink transition-all duration-500 uppercase"
               >
                 Discover More
               </Link>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 4.5. GALLERY PREVIEW SECTION */}
+      <section className="py-28 bg-atelier-paper border-b border-atelier-ink/10">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-12 items-end">
+
+            {/* Main Featured Gallery Image */}
+            <div className="md:col-span-7">
+              <div
+                onClick={() => setIsGalleryOpen(true)}
+                className="relative aspect-[16/10] overflow-hidden group cursor-pointer border border-atelier-ink/10 bg-atelier-ink/5"
+              >
+                <img
+                  src="https://res.cloudinary.com/ds78nckog/image/upload/v1785146735/IMG_0688_ny0nlp.png"
+                  alt="Gallery Exhibition Lead"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
+                />
+                <div className="absolute inset-0 bg-atelier-ink/10 group-hover:bg-transparent transition-colors" />
+                <div className="absolute bottom-4 left-4 bg-atelier-paper/90 backdrop-blur-sm px-3 py-1 text-[9px] uppercase tracking-[0.3em] font-bold border border-atelier-ink/10">
+                  Exhibit 01 — Overview
+                </div>
+              </div>
+            </div>
+
+            {/* Sidebar / CTA */}
+            <div className="md:col-span-5 space-y-6 pb-2">
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] tracking-[0.4em] uppercase font-sans font-bold opacity-40">
+                  Visual Archive
+                </span>
+                <div className="h-[1px] w-8 bg-atelier-ink/20" />
+              </div>
+
+              <h2 className="text-3xl md:text-5xl font-serif italic leading-[1.1]">
+                The Gallery
+              </h2>
+
+              <p className="text-sm font-serif italic text-atelier-ink/70 leading-relaxed">
+                A curated selection of imagery capturing our process, historical study, and finished works from the studio floor.
+              </p>
+
+              <div className="pt-4">
+                <button
+                  onClick={() => setIsGalleryOpen(true)}
+                  className="inline-block px-8 py-3.5 border border-atelier-ink text-atelier-ink text-[10px] tracking-[0.3em] font-sans font-bold hover:bg-atelier-ink hover:text-white transition-all duration-500 uppercase"
+                >
+                  Discover More
+                </button>
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
@@ -191,6 +207,12 @@ const Home = () => {
           </p>
         </div>
       </section>
+
+      {/* LIGHTBOX COMPONENT */}
+      <GalleryModal
+        isOpen={isGalleryOpen}
+        onClose={() => setIsGalleryOpen(false)}
+      />
     </div>
   );
 };

@@ -2,11 +2,11 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { ShoppingBag, User, Menu } from "lucide-react";
 import CartDrawer from "./CartDrawer";
-import useUserStore from "../store/useUserStore"; // Import your store
+import useUserStore from "../store/useUserStore";
 import useCartStore from "../store/useCartStore";
 
 const Navbar = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false); // New state
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { isAuthenticated, user } = useUserStore();
   const { cartItems, setIsCartOpen } = useCartStore();
   const cartItemCount = cartItems.reduce((total, item) => total + item.qty, 0);
@@ -27,23 +27,30 @@ const Navbar = () => {
 
           <nav className="flex flex-col space-y-8 mt-12">
             <Link
+              to="/commission"
+              onClick={onClose}
+              className="text-4xl md:text-5xl font-serif italic"
+            >
+              Commission
+            </Link>
+            <Link
               to="/store"
               onClick={onClose}
-              className="text-5xl font-serif italic"
+              className="text-4xl md:text-5xl font-serif italic"
             >
               Store
             </Link>
             <Link
               to="/magazine"
               onClick={onClose}
-              className="text-5xl font-serif italic"
+              className="text-4xl md:text-5xl font-serif italic"
             >
               Magazine
             </Link>
             <Link
               to="/journal"
               onClick={onClose}
-              className="text-5xl font-serif italic"
+              className="text-4xl md:text-5xl font-serif italic"
             >
               Journal
             </Link>
@@ -66,9 +73,10 @@ const Navbar = () => {
   return (
     <>
       <nav className="border-b border-atelier-ink/10 bg-atelier-paper sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          {/* Left Links (Desktop) */}
-          <div className="hidden md:flex space-x-8 text-[10px] uppercase tracking-[0.3em] font-sans font-bold">
+        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between relative">
+
+          {/* Left Links (Large Screens Only) */}
+          <div className="hidden lg:flex space-x-8 text-[10px] uppercase tracking-[0.3em] font-sans font-bold">
             <Link
               to="/magazine"
               className="hover:text-atelier-tan transition-colors"
@@ -82,6 +90,12 @@ const Navbar = () => {
               Journal
             </Link>
             <Link
+              to="/commission"
+              className="hover:text-atelier-tan transition-colors"
+            >
+              Commission
+            </Link>
+            <Link
               to="/store"
               className="hover:text-atelier-tan transition-colors"
             >
@@ -89,18 +103,18 @@ const Navbar = () => {
             </Link>
           </div>
 
-          {/* Center Identity - Adjusted for Mobile Left Alignment */}
-          <div className="relative md:absolute md:left-1/2 md:-translate-x-1/2 text-center z-10 pointer-events-none">
+          {/* Center Identity — Pinpoint Absolute Centering */}
+          <div className="absolute left-1/2 -translate-x-1/2 text-center z-10">
             <Link
               to="/"
-              className="text-2xl lg:text-3xl font-serif tracking-tighter uppercase italic pointer-events-auto"
+              className="text-xl md:text-2xl lg:text-3xl font-serif tracking-tighter uppercase italic whitespace-nowrap"
             >
               <span className="not-italic font-normal">Olú THE MAKER</span>
             </Link>
           </div>
 
-          {/* Right Icons - Reordered for Burger Far Right */}
-          <div className="flex items-center space-x-4 md:space-x-6 z-20">
+          {/* Right Icons — Stays visible; Burger shows on Mobile & Medium */}
+          <div className="flex items-center space-x-4 md:space-x-6 z-20 ml-auto">
             <Link
               to={isAuthenticated ? "/profile" : "/auth"}
               className="hover:text-atelier-tan transition-colors opacity-80 flex items-center gap-2 group"
@@ -126,18 +140,20 @@ const Navbar = () => {
               )}
             </button>
 
-            {/* Burger Menu */}
+            {/* Burger Menu Button (Visible on Mobile & Medium screens up to 1024px) */}
             <button
-              className="md:hidden p-2 -mr-2"
+              className="lg:hidden p-2 -mr-2"
               onClick={() => setIsMenuOpen(true)}
+              aria-label="Open navigation menu"
             >
               <Menu size={18} strokeWidth={1.5} />
             </button>
           </div>
+
         </div>
       </nav>
 
-      {/* Mobile Menu Overlay */}
+      {/* Mobile / Medium Drawer Overlay */}
       <MobileMenu
         isOpen={isMenuOpen}
         onClose={() => setIsMenuOpen(false)}

@@ -8,7 +8,7 @@ import { sendEmail } from "../utils/mailer.jsx";
 // @route   POST /api/orders
 export const addOrderItems = async (req, res) => {
   const {
-    orderItems, // This now includes the bespoke details from our Zustand store
+    orderItems, // This now includes the  details from our Zustand store
     shippingAddress,
     paymentMethod,
     taxPrice,

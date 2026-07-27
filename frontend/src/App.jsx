@@ -17,7 +17,6 @@ import DraftsList from "./components/blogComponents/DraftsList";
 import Home from "./pages/Home";
 import Store from "./pages/Store";
 import Blog from "./pages/Blog";
-import Bespoke from "./pages/Bespoke";
 import Auth from "./pages/Auth";
 import ForgotPassword from "./pages/ForgotPassword";
 import Profile from "./pages/Profile";
@@ -28,6 +27,8 @@ import OrderSuccess from "./pages/OrderSuccess";
 import PaymentFailed from "./pages/PaymentFailed";
 import ResetPassword from "./pages/ResetPassword";
 import PaymentPage from "./pages/PaymentPage";
+import Commission from "./pages/Commission";
+
 
 //Footer Pages
 import About from "./pages/footerpages/About";
@@ -57,7 +58,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/store" element={<Store />} />
             <Route path="/store/:slug" element={<ProductDetail />} />
-            <Route path="/bespoke" element={<Bespoke />} />
+            <Route path="/commission" element={<Commission />} />
             <Route path="/magazine" element={<MagazineArchive />} />
             <Route path="/magazine/:slug" element={<MagazineDetail />} />
             <Route path="/auth" element={<Auth />} />

@@ -30,7 +30,7 @@ export const WelcomeEmail = ({ name }) => (
         <Text style={textStyle}>Welcome, {name}.</Text>
         <Text style={textStyle}>
           You have successfully registered your access to Olu THE MAKER. This is
-          a space for bespoke commissions and high-end digital assets.
+          a space for commissions and high-end digital assets.
         </Text>
         <Section style={btnSection}>
           <Link href="https://oluthemaker.com/store" style={buttonStyle}>
@@ -38,7 +38,7 @@ export const WelcomeEmail = ({ name }) => (
           </Link>
         </Section>
         <Hr style={hrStyle} />
-        <Text style={footerStyle}>OLU THE MAKER — BESPOKE DIGITAL ATELIER</Text>
+        <Text style={footerStyle}>OLU THE MAKER — COMMISSIONED SHOES</Text>
       </Container>
     </Body>
   </Html>

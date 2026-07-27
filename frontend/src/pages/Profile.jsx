@@ -297,7 +297,7 @@ const Profile = () => {
                   Past Commissions
                 </h2>
                 <p className="text-[10px] tracking-widest uppercase opacity-40">
-                  Review the status of your bespoke orders
+                  Review the status of your commissioned orders
                 </p>
               </header>
 

@@ -10,7 +10,7 @@ export const getProducts = async (req, res) => {
     let query = {};
 
     if (category) query.category = category;
-    if (type) query["shoeDetails.type"] = type; // e.g., RTW vs Bespoke
+    if (type) query["shoeDetails.type"] = type; // e.g., RTW vs Commission
 
     const products = await Product.find(query).populate(
       "magazineDetails.articles",

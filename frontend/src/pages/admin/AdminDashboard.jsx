@@ -148,7 +148,7 @@ const AdminDashboard = () => {
                 Client Correspondence
               </h2>
               <p className="text-[10px] tracking-widest uppercase opacity-40">
-                Manage support inquiries and bespoke requests
+                Manage support inquiries and commission requests
               </p>
             </header>
             <AdminTicketList />

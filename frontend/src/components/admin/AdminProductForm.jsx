@@ -290,7 +290,7 @@ const AdminProductForm = () => {
           {formData.category === "Shoe" && (
             <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
               <h3 className="text-[11px] tracking-[0.3em] uppercase font-bold border-b border-atelier-ink/10 pb-2">
-                Bespoke Configuration Matrix
+                Configuration Matrix
               </h3>
 
               {[

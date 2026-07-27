@@ -46,7 +46,7 @@ const MessageForm = () => {
             <option value="" disabled>
               Please select...
             </option>
-            <option value="bespoke">Bespoke Commissions</option>
+            <option value="commission">Commissions</option>
             <option value="orders">Online Orders & Logistics</option>
             <option value="marketing">Press & Editorial</option>
             <option value="general">General Inquiries</option>

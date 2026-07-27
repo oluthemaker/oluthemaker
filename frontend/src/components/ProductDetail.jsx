@@ -16,7 +16,7 @@ const ProductDetail = () => {
   const [activeTab, setActiveTab] = useState("description");
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
 
-  // Bespoke Selection State
+  // Selection State
   const [selectedSize, setSelectedSize] = useState(null);
   const [selectedWidth, setSelectedWidth] = useState(null);
   const [selectedLast, setSelectedLast] = useState(null);
@@ -134,7 +134,7 @@ const ProductDetail = () => {
                 </div>
               </div>
 
-              {/* BESPOKE OPTIONS GRID */}
+              {/*  OPTIONS GRID */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                 {[
                   {

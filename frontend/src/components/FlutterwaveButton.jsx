@@ -17,7 +17,7 @@ const FlutterwaveButton = ({
     customer: { email, name },
     customizations: {
       title: "Olu THE MAKER",
-      description: "Bespoke Commission",
+      description: "Commission",
     },
   };
 

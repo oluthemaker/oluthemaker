@@ -23,7 +23,7 @@ const SendMessage = () => {
             </h2>
             <p className="text-atelier-ink opacity-80 leading-relaxed font-serif text-lg mb-12">
               Our dedicated team monitors every inquiry with care. Whether it is
-              a question about an existing order or a specific bespoke request,
+              a question about an existing order or a specific commission request,
               we aim to respond within 24 hours.
             </p>
 

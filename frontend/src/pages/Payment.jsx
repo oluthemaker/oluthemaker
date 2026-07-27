@@ -39,7 +39,7 @@ const Payment = () => {
   //   },
   //   customizations: {
   //     title: "Olu THE MAKER",
-  //     description: "Payment for Bespoke Commission",
+  //     description: "Payment for Commission",
   //     logo: "https://your-logo-url.com/logo.png", // Optional
   //   },
   // });

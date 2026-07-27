@@ -48,7 +48,7 @@ const About = () => {
 
                 <div className="mt-12 space-y-8 font-serif text-lg leading-relaxed text-atelier-ink/80">
                   <p>
-                    Founded with a focus on the "bespoke" spirit, every pair we
+                    Founded with a focus on the "commissioned" spirit, every pair we
                     create is an intersection of Nigerian artisanry and global
                     luxury standards.
                   </p>
@@ -67,7 +67,7 @@ const About = () => {
                 </h3>
                 <ul className="space-y-4 font-serif italic text-lg">
                   <li>Hand-selected Leathers</li>
-                  <li>Bespoke Last-making</li>
+                  <li>Master Fitting Last-making</li>
                   <li>Ethical Production</li>
                   <li>Timeless Silhouettes</li>
                 </ul>

@@ -40,15 +40,15 @@ const processSteps = [
     number: "05",
     title: "The Final Commission",
     description:
-      "Over 200 individual steps culminate in the final hand-welted pair. Hand-dyed, hand-stitched, and meticulously polished, your shoes are delivered with bespoke lasted shoetrees.",
+      "Over 200 individual steps culminate in the final hand-welted pair. Hand-dyed, hand-stitched, and meticulously polished, your shoes are delivered with lasted shoetrees.",
     image:
       "https://images.unsplash.com/photo-1616406432452-07bc5938759d?q=80&w=1200&auto=format&fit=crop",
   },
 ];
 
-const Bespoke = () => {
+const Commission = () => {
   useSEO({
-    title: "Bespoke | Olú THE MAKER",
+    title: "The Commission | Olú THE MAKER",
     description: "The Art of the Commission",
   });
 
@@ -63,14 +63,14 @@ const Bespoke = () => {
           className="max-w-4xl mx-auto space-y-8"
         >
           <span className="text-[10px] tracking-[0.5em] uppercase font-sans font-bold text-atelier-tan">
-            Bespoke
+            Commission
           </span>
           <h1 className="text-5xl md:text-9xl font-serif italic tracking-tighter leading-[0.85]">
             The Art of the <br />
             <span className="not-italic">Commission</span>
           </h1>
           <p className="text-xl md:text-2xl font-serif italic opacity-70 leading-relaxed pt-10 max-w-2xl mx-auto">
-            A bespoke pair of shoes is not merely purchased; it is commissioned.
+            A pair of shoes is not merely purchased; it is commissioned.
             A dialogue resulting in a silhouette unique to your anatomy.
           </p>
         </motion.div>
@@ -154,7 +154,7 @@ const Bespoke = () => {
                 Investment
               </span>
               <p className="font-serif text-lg italic opacity-80 leading-relaxed">
-                Bespoke commissions begin at $2,500. Prices adjust based on the
+                Commissions begin at $2,500. Prices adjust based on the
                 complexity of the pattern and the rarity of the chosen hides
                 (e.g., Museum Calf, Shell Cordovan, or Exotics).
               </p>
@@ -175,4 +175,4 @@ const Bespoke = () => {
   );
 };
 
-export default Bespoke;
+export default Commission;
