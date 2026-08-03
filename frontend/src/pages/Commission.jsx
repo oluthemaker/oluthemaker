@@ -1,133 +1,392 @@
-import React from "react";
-import { motion } from "framer-motion";
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import useSEO from "../hooks/useSEO";
 
-const processSteps = [
-  {
-    number: "01",
-    title: "The Dialogue & Measure",
-    description:
-      "Whether in our Lagos studio, London pop-up, or via a digital consultation, we begin by discussing your lifestyle, aesthetic preferences, and biomechanics. Precise measurements and foot impressions are taken.",
-    image:
-      "https://images.unsplash.com/photo-1544441893-675973e31985?q=80&w=1200&auto=format&fit=crop",
+// Define Program Specifics matching the PDF document
+const PROGRAM_DATA = {
+  masters: {
+    id: "masters",
+    name: "Master's Fitting",
+    badge: "Full Bespoke Experience",
+    summary:
+      "A personal last hand-carved to your exact anatomical measurements, complete with bespoke lasted shoetrees and full customization.",
+    steps: [
+      {
+        number: "01",
+        title: "The Dialogue & Measure",
+        description:
+          "Comprehensive physical anatomical assessment, foot impressions, and biomechanical analysis.",
+        features: [
+          "Bespoke fit with personal last",
+          "Full leather swatch selection",
+          "Large archive sample offering",
+        ],
+        image:
+          "https://images.unsplash.com/photo-1544441893-675973e31985?q=80&w=1200&auto=format&fit=crop",
+      },
+      {
+        number: "02",
+        title: "Carving the Last",
+        description:
+          "A hornbeam wood last is hand-sculpted from scratch, replicating your exact volume and structure.",
+        features: [
+          "Individual custom wooden last",
+          "Personal blueprint kept in archive",
+        ],
+        image:
+          "https://res.cloudinary.com/ds78nckog/image/upload/v1778750901/lastbench_vzjakh.jpg",
+      },
+      {
+        number: "03",
+        title: "Welting & Craftsmanship",
+        description:
+          "Hand-stitched construction tailored with ultra-fine density and bespoke sole finishing.",
+        features: [
+          "Sole stitching (12, 13, or 14 SPI)",
+          "Brass Rivets (initials on sole bottom)",
+          "Full, Half, or Natural Sole Paint",
+          "Metal Toe Plates & Rubber Stick-on option",
+        ],
+        image:
+          "https://res.cloudinary.com/ds78nckog/image/upload/v1778750901/craftsmanship_k4db0r.jpg",
+      },
+      {
+        number: "04",
+        title: "The Fitting Shoe",
+        description:
+          "A preliminary waste-leather prototype to test volume, instep pressure, and heel grip before final leather cutting.",
+        features: [
+          "Trial fitting session",
+          "Heel profile customisation (Pitched or Straight)",
+          "Nail decorations on heel",
+        ],
+        image:
+          "https://res.cloudinary.com/ds78nckog/image/upload/v1778750903/machine_xfydmy.jpg",
+      },
+      {
+        number: "05",
+        title: "The Final Commission",
+        description:
+          "200+ steps resulting in a museum-grade pair supplied with luxury maintenance equipment.",
+        features: [
+          "Custom lasted Shoe Trees included",
+          "Luxury care kit (Brush, Shine Cloth, Horn)",
+          "Rubber Top piece and 1/4 Rubber Heel",
+        ],
+        image:
+          "https://images.unsplash.com/photo-1616406432452-07bc5938759d?q=80&w=1200&auto=format&fit=crop",
+      },
+    ],
   },
-  {
-    number: "02",
-    title: "Carving the Last",
-    description:
-      "A block of hornbeam wood is hand-carved to replicate the exact anatomy of your foot. This wooden 'last' becomes your personal blueprint, kept in our archives for all future commissions.",
-    image:
-      "https://res.cloudinary.com/ds78nckog/image/upload/v1778750901/lastbench_vzjakh.jpg",
+  mtm: {
+    id: "mtm",
+    name: "Made to Measure",
+    badge: "Modified Last Program",
+    summary:
+      "Built upon our signature Spring-line last profiles with targeted leather build-ups for precise fit adjustment.",
+    steps: [
+      {
+        number: "01",
+        title: "The Selection & Measure",
+        description:
+          "We record your primary measurements and select from two iconic toe shape profiles.",
+        features: [
+          "Standard Spring-line last foundation",
+          "Entry-level leather swatch selection",
+          "Select shoe sample offering",
+        ],
+        image:
+          "https://images.unsplash.com/photo-1544441893-675973e31985?q=80&w=1200&auto=format&fit=crop",
+      },
+      {
+        number: "02",
+        title: "Last Modification",
+        description:
+          "Strategic leather fittings are added to our standard last to accommodate your instep and width.",
+        features: [
+          "Choice of two Toe Shape Profiles",
+          "Targeted last padding/alteration programme",
+        ],
+        image:
+          "https://res.cloudinary.com/ds78nckog/image/upload/v1778750901/lastbench_vzjakh.jpg",
+      },
+      {
+        number: "03",
+        title: "Welting & Hand Finishing",
+        description:
+          "Classic hand-welted sole construction prioritizing durability and elegant finishing.",
+        features: [
+          "Standard sole stitching (11 SPI)",
+          "Brass Rivets (initials on sole bottom)",
+          "Full, Half, or Natural Sole Paint",
+          "Metal Toe Plates & Rubber Stick-on option",
+        ],
+        image:
+          "https://res.cloudinary.com/ds78nckog/image/upload/v1778750901/craftsmanship_k4db0r.jpg",
+      },
+      {
+        number: "04",
+        title: "Heel & Silhouette Styling",
+        description:
+          "Fine-tuning the heel stance and sole contours to match your aesthetic preference.",
+        features: [
+          "Heel Profile customisation (Pitched or Straight)",
+          "Balanced proportion check",
+        ],
+        image:
+          "https://res.cloudinary.com/ds78nckog/image/upload/v1778750903/machine_xfydmy.jpg",
+      },
+      {
+        number: "05",
+        title: "Delivery & Presentation",
+        description:
+          "Hand-polished and finished with protective sole treatments.",
+        features: [
+          "Rubber Top piece and 1/4 Rubber Heel",
+          "Optional shoe tree addition",
+        ],
+        image:
+          "https://images.unsplash.com/photo-1616406432452-07bc5938759d?q=80&w=1200&auto=format&fit=crop",
+      },
+    ],
   },
-  {
-    number: "03",
-    title: "Welting the Sole",
-    description:
-      "A block of hornbeam wood is hand-carved to replicate the exact anatomy of your foot. This wooden 'last' becomes your personal blueprint, kept in our archives for all future commissions.",
-    image:
-      "https://res.cloudinary.com/ds78nckog/image/upload/v1778750901/craftsmanship_k4db0r.jpg",
-  },
-  {
-    number: "04",
-    title: "The Fitting Shoe",
-    description:
-      "Before cutting into your chosen exhibition-grade leather, we build a prototype shoe. During the fitting, we assess the volume, instep, and heel grip, making micro-adjustments to the wooden last.",
-    image:
-      "https://res.cloudinary.com/ds78nckog/image/upload/v1778750903/machine_xfydmy.jpg",
-  },
-  {
-    number: "05",
-    title: "The Final Commission",
-    description:
-      "Over 200 individual steps culminate in the final hand-welted pair. Hand-dyed, hand-stitched, and meticulously polished, your shoes are delivered with lasted shoetrees.",
-    image:
-      "https://images.unsplash.com/photo-1616406432452-07bc5938759d?q=80&w=1200&auto=format&fit=crop",
-  },
-];
+};
 
 const Commission = () => {
+  const [activeProgram, setActiveProgram] = useState("masters");
+
   useSEO({
     title: "The Commission | Olú THE MAKER",
-    description: "The Art of the Commission",
+    description: "The Art of the Commission — Master's Fitting & Made to Measure",
   });
+
+  const currentData = PROGRAM_DATA[activeProgram];
 
   return (
     <main className="bg-atelier-paper text-atelier-ink min-h-screen pt-32 pb-32">
       {/* HERO SECTION */}
-      <section className="max-w-7xl mx-auto px-6 mb-32 md:mb-56 text-center">
+      <section className="max-w-7xl mx-auto px-6 mb-20 text-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1.2 }}
           className="max-w-4xl mx-auto space-y-8"
         >
-          <span className="text-[10px] tracking-[0.5em] uppercase font-sans font-bold text-atelier-tan">
-            Commission
+          <span className="text-[30px] font-snell text-atelier-tan">
+            Olú Fadairo Shoemaker
           </span>
           <h1 className="text-5xl md:text-9xl font-serif italic tracking-tighter leading-[0.85]">
             The Art of the <br />
             <span className="not-italic">Commission</span>
           </h1>
-          <p className="text-xl md:text-2xl font-serif italic opacity-70 leading-relaxed pt-10 max-w-2xl mx-auto">
-            A pair of shoes is not merely purchased; it is commissioned.
-            A dialogue resulting in a silhouette unique to your anatomy.
+          <p className="text-xl md:text-2xl font-serif italic opacity-70 leading-relaxed max-w-2xl mx-auto">
+            A pair of shoes is not merely purchased; it is commissioned. A dialogue resulting in the creation of a piece of art to behold.
           </p>
         </motion.div>
       </section>
 
-      {/* THE PROCESS (Full Width Horizontal Layout) */}
-      <section className="space-y-40 md:space-y-64 mb-60">
-        {processSteps.map((step, index) => (
-          <div key={step.number} className="max-w-7xl mx-auto px-6">
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-end">
-              {/* IMAGE BLOCK - Now 4:3 Ratio */}
-              <motion.div
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 1 }}
-                className="md:col-span-8 relative aspect-[4/3] overflow-hidden bg-atelier-ink/5 shadow-sm"
-              >
-                <img
-                  src={step.image}
-                  alt={step.title}
-                  className="w-full h-full object-cover transition-transform duration-1000 hover:scale-105"
+      {/* PROGRAM SELECTOR TOGGLE */}
+      <section className="max-w-3xl mx-auto px-6 mb-24">
+        <div className="flex justify-center border-b border-atelier-ink/10 pb-4">
+          <div className="inline-flex gap-8 md:gap-16">
+            <button
+              onClick={() => setActiveProgram("masters")}
+              className={`relative pb-4 text-xs md:text-sm tracking-[0.3em] uppercase font-sans font-bold transition-all ${
+                activeProgram === "masters"
+                  ? "text-atelier-ink opacity-100"
+                  : "opacity-40 hover:opacity-70"
+              }`}
+            >
+               Master's Fitting
+              {activeProgram === "masters" && (
+                <motion.div
+                  layoutId="activeTab"
+                  className="absolute bottom-0 left-0 right-0 h-[2px] bg-atelier-ink"
                 />
-              </motion.div>
+              )}
+            </button>
 
-              {/* TEXT BLOCK - Positioned to the side/bottom */}
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 1, delay: 0.3 }}
-                className="md:col-span-4 md:pl-12 pb-4 space-y-6"
-              >
-                <div className="flex items-center gap-4">
-                  <span className="text-3xl font-serif italic opacity-20">
-                    {step.number}
-                  </span>
-                  <div className="h-[1px] flex-grow bg-atelier-ink/10" />
-                </div>
-
-                <h2 className="text-4xl md:text-5xl font-serif italic tracking-tighter leading-tight">
-                  {step.title}
-                </h2>
-
-                <p className="text-lg font-serif italic opacity-70 leading-relaxed">
-                  {step.description}
-                </p>
-
-                <div className="pt-4">
-                  <span className="text-[9px] tracking-[0.4em] uppercase font-sans font-bold opacity-30">
-                    Phase {step.number} / 04
-                  </span>
-                </div>
-              </motion.div>
-            </div>
+            <button
+              onClick={() => setActiveProgram("mtm")}
+              className={`relative pb-4 text-xs md:text-sm tracking-[0.3em] uppercase font-sans font-bold transition-all ${
+                activeProgram === "mtm"
+                  ? "text-atelier-ink opacity-100"
+                  : "opacity-40 hover:opacity-70"
+              }`}
+            >
+               Made to Measure
+              {activeProgram === "mtm" && (
+                <motion.div
+                  layoutId="activeTab"
+                  className="absolute bottom-0 left-0 right-0 h-[2px] bg-atelier-ink"
+                />
+              )}
+            </button>
           </div>
-        ))}
+        </div>
+
+        {/* Program Summary Banner */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeProgram}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.4 }}
+            className="mt-8 text-center space-y-2"
+          >
+            <span className="text-[10px] tracking-[0.4em] uppercase font-bold text-atelier-tan">
+              {currentData.badge}
+            </span>
+            <p className="text-base font-serif italic text-atelier-ink/80 max-w-xl mx-auto">
+              {currentData.summary}
+            </p>
+          </motion.div>
+        </AnimatePresence>
+      </section>
+
+      {/* THE PROCESS STEPS */}
+      <AnimatePresence mode="wait">
+        <motion.section
+          key={activeProgram}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.5 }}
+          className="space-y-40 md:space-y-56 mb-40"
+        >
+          {currentData.steps.map((step) => (
+            <div key={step.number} className="max-w-7xl mx-auto px-6">
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-end">
+                {/* IMAGE BLOCK */}
+                <div className="md:col-span-8 relative aspect-[4/3] overflow-hidden bg-atelier-ink/5 shadow-sm">
+                  <img
+                    src={step.image}
+                    alt={step.title}
+                    className="w-full h-full object-cover transition-transform duration-1000 hover:scale-105"
+                  />
+                </div>
+
+                {/* TEXT BLOCK WITH INCLUDED FEATURES */}
+                <div className="md:col-span-4 md:pl-12  space-y-6">
+                  <div className="flex items-center gap-4">
+                    <span className="text-3xl font-serif italic opacity-20">
+                      {step.number}
+                    </span>
+                    <div className="h-[1px] flex-grow bg-atelier-ink/10" />
+                  </div>
+
+                  <h2 className="text-4xl md:text-5xl font-serif italic tracking-tighter leading-tight">
+                    {step.title}
+                  </h2>
+
+                  <p className="text-base font-serif italic opacity-70 leading-relaxed">
+                    {step.description}
+                  </p>
+
+                  {/* Feature Highlights List */}
+                  <div className="pt-4 border-t border-atelier-ink/10 space-y-2">
+                    <span className="text-[9px] tracking-[0.3em] uppercase font-sans font-bold text-atelier-tan block mb-3">
+                      Programme Features
+                    </span>
+                    <ul className="space-y-1.5">
+                      {step.features.map((feat, i) => (
+                        <li
+                          key={i}
+                          className="text-xs font-serif italic opacity-90 flex items-center gap-2"
+                        >
+                          <span className="w-1 h-1 bg-atelier-tan rounded-full" />
+                          {feat}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="pt-2">
+                    <span className="text-[9px] tracking-[0.4em] uppercase font-sans font-bold opacity-30">
+                      Phase {step.number} / 05
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </motion.section>
+      </AnimatePresence>
+
+      {/* COMPARATIVE SPECIFICATION MATRIX */}
+      <section className="max-w-5xl mx-auto px-6 mb-32 border-t border-atelier-ink/10 pt-24">
+        <div className="text-center mb-16">
+          <span className="text-[10px] tracking-[0.5em] uppercase font-sans font-bold opacity-40">
+            Specifications
+          </span>
+          <h3 className="text-3xl md:text-5xl font-serif italic mt-2">
+            Program Comparison
+          </h3>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+          {/* Master's Fitting Card */}
+          <div className="p-8 border border-atelier-ink/10 bg-white/40 space-y-6">
+            <h4 className="text-2xl font-serif italic">Master's Fitting</h4>
+            <p className="text-xs font-serif italic opacity-70">
+              Uncompromising bespoke construction sculpted directly to your foot architecture.
+            </p>
+            <ul className="space-y-3 text-xs font-sans tracking-wider border-t border-atelier-ink/10 pt-6">
+              <li className="flex justify-between border-b border-atelier-ink/5 pb-2">
+                <span className="opacity-60">Fit Type</span>
+                <span className="font-bold">Hand-Carved Personal Last</span>
+              </li>
+              <li className="flex justify-between border-b border-atelier-ink/5 pb-2">
+                <span className="opacity-60">Stitching Density</span>
+                <span className="font-bold">12 / 13 / 14 SPI</span>
+              </li>
+              <li className="flex justify-between border-b border-atelier-ink/5 pb-2">
+                <span className="opacity-60">Heel Profile</span>
+                <span className="font-bold">Pitched/Straight + Nail Art</span>
+              </li>
+              <li className="flex justify-between border-b border-atelier-ink/5 pb-2">
+                <span className="opacity-60">Shoe Trees</span>
+                <span className="font-bold">Lasted Trees Included</span>
+              </li>
+              <li className="flex justify-between border-b border-atelier-ink/5 pb-2">
+                <span className="opacity-60">Personalization</span>
+                <span className="font-bold">Brass Rivets (Initials)</span>
+              </li>
+            </ul>
+          </div>
+
+          {/* Made to Measure Card */}
+          <div className="p-8 border border-atelier-ink/10 bg-white/40 space-y-6">
+            <h4 className="text-2xl font-serif italic">Made to Measure</h4>
+            <p className="text-xs font-serif italic opacity-70">
+              Refined entry program using standardized last shapes with custom anatomical build-ups.
+            </p>
+            <ul className="space-y-3 text-xs font-sans tracking-wider border-t border-atelier-ink/10 pt-6">
+              <li className="flex justify-between border-b border-atelier-ink/5 pb-2">
+                <span className="opacity-60">Fit Type</span>
+                <span className="font-bold">Spring-Line Last + Padding</span>
+              </li>
+              <li className="flex justify-between border-b border-atelier-ink/5 pb-2">
+                <span className="opacity-60">Stitching Density</span>
+                <span className="font-bold">11 SPI</span>
+              </li>
+              <li className="flex justify-between border-b border-atelier-ink/5 pb-2">
+                <span className="opacity-60">Heel Profile</span>
+                <span className="font-bold">Pitched / Straight</span>
+              </li>
+              <li className="flex justify-between border-b border-atelier-ink/5 pb-2">
+                <span className="opacity-60">Shoe Trees</span>
+                <span className="font-bold">Optional Addition</span>
+              </li>
+              <li className="flex justify-between border-b border-atelier-ink/5 pb-2">
+                <span className="opacity-60">Personalization</span>
+                <span className="font-bold">Brass Rivets (Initials)</span>
+              </li>
+            </ul>
+          </div>
+        </div>
       </section>
 
       {/* LEAD TIME & PRICING */}

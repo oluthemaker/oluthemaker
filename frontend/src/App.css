@@ -10,6 +10,7 @@
 
     /* Typography */
     --font-serif: "Adobe Garamond Pro", serif;
+    --font-snell: "Snell Roundhand", serif;
 }
 
 body {
@@ -30,10 +31,23 @@ body {
     font-style: normal;
 }
 
+@font-face {
+    font-family: "Snell Roundhand";
+    src: url("/public/snellroundhand_black.otf") format("opentype");
+    font-weight: normal;
+    font-style: normal;
+}
+
 @layer base {
     body {
         @apply bg-atelier-paper text-atelier-ink font-serif antialiased;
     }
+}
+
+.snell-font {
+    font-family: var(--font-snell);
+    font-weight: normal;
+    font-style: normal;
 }
 
 @media print {

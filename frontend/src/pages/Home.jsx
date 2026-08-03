@@ -101,9 +101,7 @@ const Home = () => {
             </h2>
 
             <p className="text-lg font-serif italic opacity-70 leading-relaxed max-w-md">
-              A personal dialogue between maker and customer. We sculpt the last
-              to your exact measurements, ensuring an uncompromised fit and a
-              truly singular design.
+              From the hands of our founder , we offer you the chance to experience the traditions and heritage of classic English West End shoemaking.
             </p>
 
             <div className="pt-6">
