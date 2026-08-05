@@ -366,7 +366,7 @@ const Commission = () => {
             <ul className="space-y-3 text-xs font-sans tracking-wider border-t border-atelier-ink/10 pt-6">
               <li className="flex justify-between border-b border-atelier-ink/5 pb-2">
                 <span className="opacity-60">Fit Type</span>
-                <span className="font-bold">Spring-Line Last + Padding</span>
+                <span className="font-bold">Spring-Line Last + Leather Fitting</span>
               </li>
               <li className="flex justify-between border-b border-atelier-ink/5 pb-2">
                 <span className="opacity-60">Stitching Density</span>

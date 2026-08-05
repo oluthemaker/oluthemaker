@@ -74,20 +74,22 @@ const Home = () => {
       <FeaturedBlogCard post={secondaryPost} />
 
       {/* 4. THE COMMISSIONED SHOES EXPERIENCE */}
+      {/* 4. THE COMMISSIONED SHOES EXPERIENCE */}
       <section className="relative py-32 bg-atelier-ink text-white overflow-hidden">
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-24 items-center">
-          {/* Left: Image Box */}
-          <div className="relative aspect-[4/3] w-full group">
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-16 items-center">
+
+          {/* Left: Image Box (Standardized to md:col-span-7 & aspect-[16/10]) */}
+          <div className="md:col-span-7 relative aspect-[16/10] w-full group overflow-hidden border border-white/10">
             <img
               src="https://res.cloudinary.com/ds78nckog/image/upload/v1778754634/moreimages_yhut1e.jpg"
               alt="Commissioned Shoes"
-              className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-700"
+              className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700"
             />
-            <div className="absolute inset-0 border border-white/10 m-4 pointer-events-none" />
+            <div className="absolute inset-0 border border-white/10 m-4 pointer-events-none z-10" />
           </div>
 
-          {/* Right: Text Content */}
-          <div className="space-y-8">
+          {/* Right: Text Content (Standardized to md:col-span-5) */}
+          <div className="md:col-span-5 space-y-8">
             <div className="flex items-center gap-4">
               <span className="text-[10px] tracking-[0.4em] uppercase font-sans font-bold text-atelier-tan">
                 Commission
@@ -97,11 +99,10 @@ const Home = () => {
 
             <h2 className="text-4xl md:text-6xl font-serif italic tracking-tighter leading-[1.1]">
               The Commission <br />
-              <span className="not-italic text-white/90"></span>
             </h2>
 
             <p className="text-lg font-serif italic opacity-70 leading-relaxed max-w-md">
-              From the hands of our founder , we offer you the chance to experience the traditions and heritage of classic English West End shoemaking.
+              From the hands of our founder, we offer you the chance to experience the traditions and heritage of classic English West End shoemaking.
             </p>
 
             <div className="pt-6">
@@ -113,15 +114,17 @@ const Home = () => {
               </Link>
             </div>
           </div>
+
         </div>
       </section>
 
       {/* 4.5. GALLERY PREVIEW SECTION */}
+      {/* THE GALLERY */}
       <section className="py-28 bg-atelier-paper border-b border-atelier-ink/10">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-12 items-end">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-16 items-center">
 
-            {/* Main Featured Gallery Image */}
+            {/* Main Featured Gallery Image (Standardized to md:col-span-7 & aspect-[16/10]) */}
             <div className="md:col-span-7">
               <div
                 onClick={() => setIsGalleryOpen(true)}
@@ -133,14 +136,14 @@ const Home = () => {
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
                 />
                 <div className="absolute inset-0 bg-atelier-ink/10 group-hover:bg-transparent transition-colors" />
-                <div className="absolute bottom-4 left-4 bg-atelier-paper/90 backdrop-blur-sm px-3 py-1 text-[9px] uppercase tracking-[0.3em] font-bold border border-atelier-ink/10">
+                <div className="absolute bottom-4 left-4 bg-atelier-paper/90 backdrop-blur-sm px-3 py-1 text-[9px] uppercase tracking-[0.3em] font-bold border border-atelier-ink/10 z-10">
                   Exhibit 01 — Overview
                 </div>
               </div>
             </div>
 
-            {/* Sidebar / CTA */}
-            <div className="md:col-span-5 space-y-6 pb-2">
+            {/* Sidebar / CTA (Standardized to md:col-span-5) */}
+            <div className="md:col-span-5 space-y-6">
               <div className="flex items-center gap-3">
                 <span className="text-[10px] tracking-[0.4em] uppercase font-sans font-bold opacity-40">
                   Visual Archive
