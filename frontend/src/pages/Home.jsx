@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import FeaturedBlogCard from "../components/FeaturedBlogCard";
 import GalleryModal from "../components/GalleryModal";
+import MagazineCarousel from "../components/MagazineCarousel";
 import useBlogStore from "../store/useBlogStore";
 import useSEO from "../hooks/useSEO";
+import useProductStore from "../store/useProductStore";
 
 const Home = () => {
   useSEO({
@@ -14,6 +16,9 @@ const Home = () => {
   const { featuredBlog, fetchBlogs, loading, blogs } = useBlogStore();
   const [secondaryPost, setSecondaryPost] = useState(null);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const { magazines, fetchProducts } = useProductStore();
+
+  const recentMagazines = magazines.slice(0, 4);
 
   useEffect(() => {
     fetchBlogs();
@@ -24,6 +29,10 @@ const Home = () => {
       setSecondaryPost(blogs[0]);
     }
   }, [blogs]);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
 
   if (loading)
     return (
@@ -70,15 +79,16 @@ const Home = () => {
         </div>
       </section>
 
+
+      {/* 2. RECENT MAGAZINES CAROUSEL */}
+      <MagazineCarousel magazines={recentMagazines} />
+
       {/* 3. FEATURED BLOG CARD */}
       <FeaturedBlogCard post={secondaryPost} />
 
       {/* 4. THE COMMISSIONED SHOES EXPERIENCE */}
-      {/* 4. THE COMMISSIONED SHOES EXPERIENCE */}
       <section className="relative py-32 bg-atelier-ink text-white overflow-hidden">
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-16 items-center">
-
-          {/* Left: Image Box (Standardized to md:col-span-7 & aspect-[16/10]) */}
           <div className="md:col-span-7 relative aspect-[16/10] w-full group overflow-hidden border border-white/10">
             <img
               src="https://res.cloudinary.com/ds78nckog/image/upload/v1778754634/moreimages_yhut1e.jpg"
@@ -88,7 +98,6 @@ const Home = () => {
             <div className="absolute inset-0 border border-white/10 m-4 pointer-events-none z-10" />
           </div>
 
-          {/* Right: Text Content (Standardized to md:col-span-5) */}
           <div className="md:col-span-5 space-y-8">
             <div className="flex items-center gap-4">
               <span className="text-[10px] tracking-[0.4em] uppercase font-sans font-bold text-atelier-tan">
@@ -114,17 +123,13 @@ const Home = () => {
               </Link>
             </div>
           </div>
-
         </div>
       </section>
 
-      {/* 4.5. GALLERY PREVIEW SECTION */}
-      {/* THE GALLERY */}
+      {/* 5. GALLERY PREVIEW SECTION */}
       <section className="py-28 bg-atelier-paper border-b border-atelier-ink/10">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-16 items-center">
-
-            {/* Main Featured Gallery Image (Standardized to md:col-span-7 & aspect-[16/10]) */}
             <div className="md:col-span-7">
               <div
                 onClick={() => setIsGalleryOpen(true)}
@@ -142,7 +147,6 @@ const Home = () => {
               </div>
             </div>
 
-            {/* Sidebar / CTA (Standardized to md:col-span-5) */}
             <div className="md:col-span-5 space-y-6">
               <div className="flex items-center gap-3">
                 <span className="text-[10px] tracking-[0.4em] uppercase font-sans font-bold opacity-40">
@@ -168,12 +172,13 @@ const Home = () => {
                 </button>
               </div>
             </div>
-
           </div>
         </div>
       </section>
 
-      {/* 5. MISSION: THE PHILOSOPHY */}
+
+
+      {/* 6. MISSION / PHILOSOPHY */}
       <section className="bg-atelier-paper py-32 px-6">
         <div className="max-w-4xl mx-auto text-center">
           <div className="flex justify-center mb-12">
