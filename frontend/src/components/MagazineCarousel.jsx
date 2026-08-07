@@ -82,6 +82,7 @@ const MagazineCarousel = ({ magazines = [] }) => {
                   className="group/card block space-y-4"
                 >
                   {/* Magazine Cover */}
+                  <div className="border-10 border-atelier-ink/10 bg-atelier-ink/5">
                   <div className="relative aspect-[3/4] overflow-hidden border border-atelier-ink/10 bg-atelier-ink/5 shadow-sm">
                     <img
                       src={coverImage}
@@ -92,6 +93,7 @@ const MagazineCarousel = ({ magazines = [] }) => {
 
                     <div className="absolute bottom-3 right-3 bg-atelier-paper/90 backdrop-blur-sm px-3 py-1 text-[8px] uppercase tracking-[0.3em] font-bold border border-atelier-ink/10">
                       Read Issue
+                    </div>
                     </div>
                   </div>
 
