@@ -6,7 +6,10 @@ const MagazineCarousel = ({ magazines = [] }) => {
 
   if (!magazines || magazines.length === 0) return null;
 
-  // Manual scroll helper for desktop arrows
+  // Take the 4 most recent magazines
+  const recentMagazines = magazines.slice(0, 4);
+
+  // Manual scroll helper for arrows
   const scroll = (direction) => {
     if (scrollRef.current) {
       const { scrollLeft, clientWidth } = scrollRef.current;
@@ -26,7 +29,7 @@ const MagazineCarousel = ({ magazines = [] }) => {
             Print & Digital Archive
           </span>
           <h2 className="text-3xl md:text-5xl font-serif italic leading-[1.1]">
-            The Magazines
+            <a href="/magazine">The Magazines</a>
           </h2>
         </div>
 
@@ -36,7 +39,7 @@ const MagazineCarousel = ({ magazines = [] }) => {
             Swipe or drag to explore curations and historical studies captured in our latest editions.
           </p>
 
-          {/* Navigation Controls (Desktop) */}
+          {/* Navigation Controls */}
           <div className="flex items-center gap-3">
             <button
               onClick={() => scroll("left")}
@@ -67,7 +70,7 @@ const MagazineCarousel = ({ magazines = [] }) => {
           className="flex gap-8 overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar pb-6"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
-          {magazines.map((item, index) => {
+          {recentMagazines.map((item, index) => {
             const coverImage = item?.images?.[0] || item?.magazineDetails?.articles?.[0]?.headerImage;
             const issueTitle = item?.name || "Issue";
             const issueSlug = item?.slug;
@@ -75,25 +78,30 @@ const MagazineCarousel = ({ magazines = [] }) => {
             return (
               <div
                 key={item?._id || index}
-                className="w-72 md:w-80 flex-shrink-0 snap-start"
+                /*
+                   Mobile: 1 per view (100% width)
+                   Medium (md): 2 per view (50% minus gap share)
+                   Large (lg): 4 per view (25% minus gap share)
+                */
+                className="w-full md:w-[calc(50%-1rem)] lg:w-[calc(25%-1.5rem)] flex-shrink-0 snap-start"
               >
                 <Link
                   to={`/magazine/${issueSlug}`}
                   className="group/card block space-y-4"
                 >
                   {/* Magazine Cover */}
-                  <div className="border-10 border-atelier-ink/10 bg-atelier-ink/5">
-                  <div className="relative aspect-[3/4] overflow-hidden border border-atelier-ink/10 bg-atelier-ink/5 shadow-sm">
-                    <img
-                      src={coverImage}
-                      alt={issueTitle}
-                      className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-700 ease-out"
-                    />
-                    <div className="absolute inset-0 bg-atelier-ink/10 opacity-0 group-hover/card:opacity-100 transition-opacity duration-300" />
+                  <div className="border-[10px] border-atelier-ink/10 bg-atelier-ink/5">
+                    <div className="relative aspect-[3/4] overflow-hidden border border-atelier-ink/10 bg-atelier-ink/5 shadow-sm">
+                      <img
+                        src={coverImage}
+                        alt={issueTitle}
+                        className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-700 ease-out"
+                      />
+                      <div className="absolute inset-0 bg-atelier-ink/10 opacity-0 group-hover/card:opacity-100 transition-opacity duration-300" />
 
-                    <div className="absolute bottom-3 right-3 bg-atelier-paper/90 backdrop-blur-sm px-3 py-1 text-[8px] uppercase tracking-[0.3em] font-bold border border-atelier-ink/10">
-                      Read Issue
-                    </div>
+                      <div className="absolute bottom-3 right-3 bg-atelier-paper/90 backdrop-blur-sm px-3 py-1 text-[8px] uppercase tracking-[0.3em] font-bold border border-atelier-ink/10">
+                        Read Issue
+                      </div>
                     </div>
                   </div>
 

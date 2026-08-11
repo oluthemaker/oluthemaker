@@ -30,7 +30,6 @@ const Footer = ({ navLinks = [] }) => {
     { name: "Terms", path: "/terms" },
     { name: "Privacy", path: "/privacy" },
     { name: "Cookies", path: "/cookies" },
-    { name: "Our Lasts", path: "/our-lasts" },
     { name: "Glossary", path: "/glossary" },
   ];
 

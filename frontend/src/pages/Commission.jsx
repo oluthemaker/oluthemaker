@@ -3,6 +3,37 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import useSEO from "../hooks/useSEO";
 
+// Define MTM Last Profiles with placeholder images and specs
+const MTM_PROFILES = [
+  {
+    id: "profile-1",
+    name: "The Moore",
+    heelHeight: "18mm",
+    toeSpring: "13mm",
+    fittingOptions: "F, E, EE",
+    image:
+      "https://res.cloudinary.com/ds78nckog/image/upload/v1786448698/IMG_3584_qen1aq.png",
+  },
+  {
+    id: "profile-2",
+    name: "The Teemu 1",
+    heelHeight: "18mm",
+    toeSpring: "13mm",
+    fittingOptions: "F, E, EE",
+    image:
+      "https://res.cloudinary.com/ds78nckog/image/upload/v1786448698/IMG_3558_wt3pzl.png",
+  },
+  {
+    id: "profile-3",
+    name: "The Teemu 2",
+    heelHeight: "18mm",
+    toeSpring: "13mm",
+    fittingOptions: "F, E, EE",
+    image:
+      "https://res.cloudinary.com/ds78nckog/image/upload/v1786448688/IMG_3586_ouszk3.png",
+  },
+];
+
 // Define Program Specifics matching the PDF document
 const PROGRAM_DATA = {
   masters: {
@@ -84,7 +115,7 @@ const PROGRAM_DATA = {
     name: "Made to Measure",
     badge: "Modified Last Program",
     summary:
-      "Built upon our signature Spring-line last profiles with targeted leather build-ups for precise fit adjustment.",
+      "Built upon our signature last profiles with targeted leather build-ups for precise fit adjustment.",
     steps: [
       {
         number: "01",
@@ -92,7 +123,7 @@ const PROGRAM_DATA = {
         description:
           "We record your primary measurements and select from two iconic toe shape profiles.",
         features: [
-          "Standard Spring-line last foundation",
+          "Standard last foundation",
           "Entry-level leather swatch selection",
           "Select shoe sample offering",
         ],
@@ -155,10 +186,12 @@ const PROGRAM_DATA = {
 
 const Commission = () => {
   const [activeProgram, setActiveProgram] = useState("masters");
+  const [selectedMtmProfile, setSelectedMtmProfile] = useState(null);
 
   useSEO({
     title: "The Commission | Olú THE MAKER",
-    description: "The Art of the Commission — Master's Fitting & Made to Measure",
+    description:
+      "The Art of the Commission — Master's Fitting & Made to Measure",
   });
 
   const currentData = PROGRAM_DATA[activeProgram];
@@ -181,24 +214,28 @@ const Commission = () => {
             <span className="not-italic">Commission</span>
           </h1>
           <p className="text-xl md:text-2xl font-serif italic opacity-70 leading-relaxed max-w-2xl mx-auto">
-            A pair of shoes is not merely purchased; it is commissioned. A dialogue resulting in the creation of a piece of art to behold.
+            A pair of shoes is not merely purchased; it is commissioned. A
+            dialogue resulting in the creation of a piece of art to behold.
           </p>
         </motion.div>
       </section>
 
       {/* PROGRAM SELECTOR TOGGLE */}
-      <section className="max-w-3xl mx-auto px-6 mb-24">
+      <section className="max-w-3xl mx-auto px-6 mb-16">
         <div className="flex justify-center border-b border-atelier-ink/10 pb-4">
           <div className="inline-flex gap-8 md:gap-16">
             <button
-              onClick={() => setActiveProgram("masters")}
+              onClick={() => {
+                setActiveProgram("masters");
+                setSelectedMtmProfile(null);
+              }}
               className={`relative pb-4 text-xs md:text-sm tracking-[0.3em] uppercase font-sans font-bold transition-all ${
                 activeProgram === "masters"
                   ? "text-atelier-ink opacity-100"
                   : "opacity-40 hover:opacity-70"
               }`}
             >
-               Master's Fitting
+              Master's Fitting
               {activeProgram === "masters" && (
                 <motion.div
                   layoutId="activeTab"
@@ -215,7 +252,7 @@ const Commission = () => {
                   : "opacity-40 hover:opacity-70"
               }`}
             >
-               Made to Measure
+              Made to Measure
               {activeProgram === "mtm" && (
                 <motion.div
                   layoutId="activeTab"
@@ -244,6 +281,124 @@ const Commission = () => {
             </p>
           </motion.div>
         </AnimatePresence>
+
+        {/* MTM INTERACTIVE LAST PROFILES SECTION */}
+        {activeProgram === "mtm" && (
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="mt-12 pt-8 border-t border-atelier-ink/10"
+          >
+            <div className="text-center mb-6">
+              <span className="text-[9px] tracking-[0.3em] uppercase font-sans font-bold text-atelier-tan block">
+                Select a Profile to Inspect
+              </span>
+            </div>
+
+            {/* Thumbnail Grid */}
+            <div className="grid grid-cols-3 gap-4 md:gap-6 max-w-xl mx-auto">
+              {MTM_PROFILES.map((profile) => {
+                const isSelected = selectedMtmProfile?.id === profile.id;
+                return (
+                  <button
+                    key={profile.id}
+                    onClick={() => setSelectedMtmProfile(profile)}
+                    className="group relative text-left focus:outline-none"
+                  >
+                    <div
+                      className={`relative aspect-[3/4] overflow-hidden bg-atelier-ink/5 border transition-all duration-300 ${
+                        isSelected
+                          ? "border-atelier-tan shadow-md"
+                          : "border-atelier-ink/10 hover:border-atelier-ink/40"
+                      }`}
+                    >
+                      <motion.img
+                        src={profile.image}
+                        alt={profile.name}
+                        animate={{ scale: isSelected ? 1.08 : 1 }}
+                        transition={{ duration: 0.4, ease: "easeOut" }}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <p className="text-[10px] tracking-wider uppercase font-sans font-semibold mt-2 text-center opacity-70 group-hover:opacity-100 truncate">
+                      {profile.name}
+                    </p>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Selected Profile Detail Viewer (Zoom In + Right Side Specs & Description) */}
+            <AnimatePresence mode="wait">
+              {selectedMtmProfile && (
+                <motion.div
+                  key={selectedMtmProfile.id}
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.4, ease: "easeInOut" }}
+                  className="mt-10 p-6 md:p-8 bg-white/70 border border-atelier-ink/10 max-w-3xl mx-auto shadow-sm"
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+                    {/* Left: Zoomed-in Image Canvas */}
+                    <div className="md:col-span-6 relative aspect-[3/4] overflow-hidden bg-atelier-ink/5 border border-atelier-ink/10">
+                      <motion.img
+                        src={selectedMtmProfile.image}
+                        alt={selectedMtmProfile.name}
+                        initial={{ scale: 1 }}
+                        animate={{ scale: 1.25 }}
+                        transition={{ duration: 0.6, ease: "easeOut" }}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+
+                    {/* Right: Description & Technical Specifications */}
+                    <div className="md:col-span-6 space-y-4 text-left">
+                      <div className="flex justify-between items-start border-b border-atelier-ink/10 pb-3">
+                        <div>
+                          <span className="text-[9px] tracking-[0.3em] uppercase font-sans font-bold text-atelier-tan block">
+                            Last Profile
+                          </span>
+                          <h4 className="text-2xl font-serif italic font-semibold">
+                            {selectedMtmProfile.name}
+                          </h4>
+                        </div>
+                        <button
+                          onClick={() => setSelectedMtmProfile(null)}
+                          className="text-[10px] tracking-widest uppercase opacity-40 hover:opacity-100 pt-1"
+                        >
+                          Close ✕
+                        </button>
+                      </div>
+                      {/* Specs List */}
+                      <dl className="space-y-2 text-xs font-sans pt-2 border-atelier-ink/10">
+                        <div className="flex justify-between border-b border-atelier-ink/5 pb-1.5">
+                          <dt className="opacity-60">Heel Height</dt>
+                          <dd className="font-bold">
+                            {selectedMtmProfile.heelHeight}
+                          </dd>
+                        </div>
+                        <div className="flex justify-between border-b border-atelier-ink/5 pb-1.5">
+                          <dt className="opacity-60">Toe Spring</dt>
+                          <dd className="font-bold">
+                            {selectedMtmProfile.toeSpring}
+                          </dd>
+                        </div>
+                        <div className="flex justify-between border-b border-atelier-ink/5 pb-1.5">
+                          <dt className="opacity-60">Fitting Options</dt>
+                          <dd className="font-bold">
+                            {selectedMtmProfile.fittingOptions}
+                          </dd>
+                        </div>
+                      </dl>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        )}
       </section>
 
       {/* THE PROCESS STEPS */}
@@ -269,7 +424,7 @@ const Commission = () => {
                 </div>
 
                 {/* TEXT BLOCK WITH INCLUDED FEATURES */}
-                <div className="md:col-span-4 md:pl-12  space-y-6">
+                <div className="md:col-span-4 md:pl-12 space-y-6">
                   <div className="flex items-center gap-4">
                     <span className="text-3xl font-serif italic opacity-20">
                       {step.number}
@@ -331,7 +486,8 @@ const Commission = () => {
           <div className="p-8 border border-atelier-ink/10 bg-white/40 space-y-6">
             <h4 className="text-2xl font-serif italic">Master's Fitting</h4>
             <p className="text-xs font-serif italic opacity-70">
-              Uncompromising bespoke construction sculpted directly to your foot architecture.
+              Uncompromising bespoke construction sculpted directly to your foot
+              architecture.
             </p>
             <ul className="space-y-3 text-xs font-sans tracking-wider border-t border-atelier-ink/10 pt-6">
               <li className="flex justify-between border-b border-atelier-ink/5 pb-2">
@@ -361,12 +517,15 @@ const Commission = () => {
           <div className="p-8 border border-atelier-ink/10 bg-white/40 space-y-6">
             <h4 className="text-2xl font-serif italic">Made to Measure</h4>
             <p className="text-xs font-serif italic opacity-70">
-              Refined entry program using standardized last shapes with custom anatomical build-ups.
+              Refined entry program using standardized last shapes with custom
+              anatomical build-ups.
             </p>
             <ul className="space-y-3 text-xs font-sans tracking-wider border-t border-atelier-ink/10 pt-6">
               <li className="flex justify-between border-b border-atelier-ink/5 pb-2">
                 <span className="opacity-60">Fit Type</span>
-                <span className="font-bold">Spring-Line Last + Leather Fitting</span>
+                <span className="font-bold">
+                  Spring-Line Last + Leather Fitting
+                </span>
               </li>
               <li className="flex justify-between border-b border-atelier-ink/5 pb-2">
                 <span className="opacity-60">Stitching Density</span>

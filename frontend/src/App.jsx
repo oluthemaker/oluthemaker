@@ -74,7 +74,7 @@ function App() {
             <Route path="/contact" element={<Contact />} />
             <Route path="/shipping" element={<Shipping />} />
             <Route path="/cookies" element={<CookieSettingsPage />} />
-            <Route path="/our-lasts" element={<OurLasts />} />
+            {/* <Route path="/our-lasts" element={<OurLasts />} /> */}
             <Route path="/glossary" element={<GlossaryList />} />
             <Route path="/glossary/:term" element={<GlossaryDetail />} />
             //Protected Routes
