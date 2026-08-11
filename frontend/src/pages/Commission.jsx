@@ -347,7 +347,7 @@ const Commission = () => {
                         src={selectedMtmProfile.image}
                         alt={selectedMtmProfile.name}
                         initial={{ scale: 1 }}
-                        animate={{ scale: 1 }}
+                        animate={{ scale: 1.25 }}
                         transition={{ duration: 0.6, ease: "easeOut" }}
                         className="w-full h-full object-cover"
                       />
