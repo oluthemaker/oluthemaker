@@ -63,6 +63,7 @@ const ProductDetail = () => {
     });
   };
 
+
   useSEO({
     title: product?.name,
     description: product?.description,

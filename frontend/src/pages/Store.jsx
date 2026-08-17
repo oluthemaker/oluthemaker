@@ -75,6 +75,7 @@ const Store = () => {
     });
   });
 
+
   useSEO({
     title: "Store",
     description: "Browse our collection of Limited Edition Items",
