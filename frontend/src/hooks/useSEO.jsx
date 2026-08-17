@@ -1,44 +1,75 @@
 import { useEffect } from "react";
 
-const useSEO = ({ title, description, ogImage, ogType = "website" }) => {
-  useEffect(() => {
-    // 1. Update Page Title
-    document.title = `${title} | Olú the Maker`;
+const SITE_NAME = "Olú the Maker";
+const SITE_URL = "https://oluthemaker.com";
 
-    // 2. Helper function to update or create meta tags
+const useSEO = ({
+  title,
+  description,
+  canonical,
+  ogImage,
+  ogType = "website",
+}) => {
+  useEffect(() => {
+    const fullTitle = title ? `${title} | ${SITE_NAME}` : SITE_NAME;
+    document.title = fullTitle;
+
+    const pageUrl = canonical || `${SITE_URL}${window.location.pathname}`;
+    const ogImageUrl = ogImage || `https://res.cloudinary.com/ds78nckog/image/upload/v1785146735/IMG_0688_ny0nlp.png`;
+    // Create or update meta tags
     const setMetaTag = (attr, value, content) => {
       let element = document.querySelector(`meta[${attr}="${value}"]`);
+
       if (!element) {
         element = document.createElement("meta");
         element.setAttribute(attr, value);
         document.head.appendChild(element);
       }
+
       element.setAttribute("content", content);
     };
 
-    // 3. Standard Description
+    // Create or update link tags
+    const setLinkTag = (rel, href) => {
+      let element = document.querySelector(`link[rel="${rel}"]`);
+
+      if (!element) {
+        element = document.createElement("link");
+        element.setAttribute("rel", rel);
+        document.head.appendChild(element);
+      }
+
+      element.setAttribute("href", href);
+    };
+
+    // Canonical
+    setLinkTag("canonical", pageUrl);
+
+    // Standard SEO
     setMetaTag("name", "description", description);
 
-    // 4. Open Graph Tags (For WhatsApp/Social Sharing)
-    const url = window.location.href;
-    setMetaTag("property", "og:title", `${title} | Olú the Maker`);
+    // Open Graph
+    setMetaTag("property", "og:title", fullTitle);
     setMetaTag("property", "og:description", description);
-    setMetaTag("property", "og:url", url);
+    setMetaTag("property", "og:url", pageUrl);
     setMetaTag("property", "og:type", ogType);
+    setMetaTag("property", "og:site_name", SITE_NAME);
 
     if (ogImage) {
-      setMetaTag("property", "og:image", ogImage);
+      setMetaTag("property", "og:image", ogImageUrl);
+      setMetaTag("property", "og:image:width", "1200");
+      setMetaTag("property", "og:image:height", "630");
     }
 
-    // Optional: Clean up if necessary (though usually not needed for SEO)
-  }, [title, description, ogImage, ogType]);
+    // Twitter
+    setMetaTag("name", "twitter:card", "summary_large_image");
+    setMetaTag("name", "twitter:title", fullTitle);
+    setMetaTag("name", "twitter:description", description);
+
+    if (ogImage) {
+      setMetaTag("name", "twitter:image", ogImageUrl);
+    }
+  }, [title, description, canonical, ogImage, ogType]);
 };
 
 export default useSEO;
-
-// useSEO({
-//     title: artisan ? `${artisan.firstName} - ${artisan.specialty}` : "Loading Artisan...",
-//     description: `Hire ${artisan?.firstName}, a professional ${artisan?.specialty} in ${artisan?.location}. Verified on Abeg Fix.`,
-//     ogImage: artisan?.profileImage || "/default-preview.png",
-//     ogType: "profile"
-//   });

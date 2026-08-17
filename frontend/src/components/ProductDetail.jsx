@@ -62,11 +62,17 @@ const ProductDetail = () => {
       material: selectedMaterial,
     });
   };
+
   useSEO({
     title: product?.name,
     description: product?.description,
+    canonical: product
+      ? `https://oluthemaker.com/store/${product?.slug}`
+      : undefined,
     ogImage: product?.images?.[0],
+    ogType: "website",
   });
+
 
   if (loading)
     return (

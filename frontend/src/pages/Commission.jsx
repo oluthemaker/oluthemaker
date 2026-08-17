@@ -189,7 +189,7 @@ const Commission = () => {
   const [selectedMtmProfile, setSelectedMtmProfile] = useState(null);
 
   useSEO({
-    title: "The Commission | Olú THE MAKER",
+    title: "The Commission",
     description:
       "The Art of the Commission — Master's Fitting & Made to Measure",
   });

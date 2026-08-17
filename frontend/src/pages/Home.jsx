@@ -8,9 +8,11 @@ import useSEO from "../hooks/useSEO";
 import useProductStore from "../store/useProductStore";
 
 const Home = () => {
-  useSEO({
+   useSEO({
     title: "Home",
     description: "The home of Africa's number one Commissioned Shoes and Menswear hub",
+    ogImage: "https://res.cloudinary.com/ds78nckog/image/upload/v1785146735/IMG_0688_ny0nlp.png",
+    ogType: "website",
   });
 
   const { featuredBlog, fetchBlogs, loading, blogs } = useBlogStore();

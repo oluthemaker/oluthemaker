@@ -80,6 +80,8 @@ const Store = () => {
     description: "Browse our collection of Limited Edition Items",
   });
 
+
+
   if (loading && products.length === 0) {
     return (
       <div className="min-h-screen pt-40 text-center font-serif italic">

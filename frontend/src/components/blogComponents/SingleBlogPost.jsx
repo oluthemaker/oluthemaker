@@ -72,7 +72,19 @@ const SingleBlogPost = () => {
     title: currentBlog?.title,
     description: currentBlog?.excerpt,
     ogImage: currentBlog?.headerImage,
+    ogType: "article",
   });
+
+  useSEO({
+    title: currentBlog?.title,
+    description: currentBlog?.excerpt,
+    canonical: currentBlog
+      ? `https://oluthemaker.com/journal/${currentBlog?.slug}`
+      : undefined,
+    ogImage: currentBlog?.headerImage,
+    ogType: "article",
+  });
+
 
   if (checkingAuth || loading)
     return (

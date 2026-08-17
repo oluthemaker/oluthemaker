@@ -34,8 +34,14 @@ const MagazineDetail = () => {
   useSEO({
     title: issueData?.name,
     description: issueData?.description,
+    canonical: issueData
+      ? `https://oluthemaker.com/magazine/${issueData?.slug}`
+      : undefined,
     ogImage: issueData?.images?.[0]?.url,
+    ogType: "website",
   });
+
+
 
   // Use the local loading state and the store's loading state
   if (isInitialLoading || storeLoading) {
