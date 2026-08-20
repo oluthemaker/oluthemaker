@@ -28,6 +28,7 @@ import PaymentFailed from "./pages/PaymentFailed";
 import ResetPassword from "./pages/ResetPassword";
 import PaymentPage from "./pages/PaymentPage";
 import Commission from "./pages/Commission";
+import Qr from "./pages/Qr";
 
 
 //Footer Pages
@@ -60,6 +61,7 @@ function App() {
             <Route path="/store/:slug" element={<ProductDetail />} />
             <Route path="/commission" element={<Commission />} />
             <Route path="/magazine" element={<MagazineArchive />} />
+            <Route path="/qr" element={<Qr />} />
             <Route path="/magazine/:slug" element={<MagazineDetail />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
