@@ -240,7 +240,7 @@ const Qr = () => {
                     {item.label}
                   </span>
 
-                  <span className="font-serif text-base">
+                  <span className="font-serif text-sm">
                     {item.title}
                   </span>
                 </div>
