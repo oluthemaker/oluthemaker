@@ -114,7 +114,7 @@ const Navbar = () => {
           </div>
 
           {/* Right Icons — Stays visible; Burger shows on Mobile & Medium */}
-          <div className="flex items-center space-x-4 md:space-x-6 z-20 ml-auto">
+          <div className="flex items-center space-x-1 md:space-x-6 z-20 ml-auto">
             <Link
               to={isAuthenticated ? "/profile" : "/auth"}
               className="hover:text-atelier-tan transition-colors opacity-80 flex items-center gap-2 group"

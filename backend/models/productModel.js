@@ -9,29 +9,40 @@ const productSchema = new mongoose.Schema(
     images: [{ type: String }], // Array of URLs (Cloudinary/S3)
     category: {
       type: String,
-      enum: ["Shoe", "Magazine", "Accessory"],
+      enum: ["Shoe", "Magazine", "Leather Goods", "Merchandise"],
       required: true,
     },
+    // NEW: Subcategory field
+        subCategory: {
+          type: String,
+          trim: true,
+          default: null,
+        },
 
     // NEW: Status for "Limited Edition" or "Archive" labels
     status: {
-      type: String,
-      enum: ["Available", "Pre-Order", "Sold Out", "Archived"],
-      default: "Available",
+          type: String,
+          enum: ["Available", "Pre-Order", "Sold Out", "Archived", "Auction"],
+          default: "Available",
     },
+    // NEW: Auction Specifications
+        isAuction: { type: Boolean, default: false },
+        auctionDetails: {
+          startingBid: { type: Number },
+          currentBid: { type: Number },
+          minBidIncrement: { type: Number, default: 5000 },
+          startTime: { type: Date },
+          endTime: { type: Date },
+          reservePrice: { type: Number },
+          winningBidder: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        },
 
     // Shoe Specifics
     shoeDetails: {
       style: [{ type: String }], // Changed to Array
       material: [{ type: String }], // Changed to Array
       color: [{ type: String }], // Changed to Array
-      construction: [{ type: String }], // Changed to Array
-      soles: [{ type: String }], // Changed to Array
-      last: [{ type: String }], // Changed to Array
       sizes: [Number],
-      width: [{ type: String }], // Changed to Array
-      isBespoke: { type: Boolean, default: false },
-      leadTime: { type: String, default: "4-6 weeks" },
     },
 
     // Magazine Specifics
@@ -65,9 +76,20 @@ const productSchema = new mongoose.Schema(
   },
 );
 
-// Virtual to check if item is currently in stock
+// Virtual to check availability
 productSchema.virtual("isAvailable").get(function () {
-  return this.stock > 0 || this.shoeDetails.isBespoke;
+  if (this.isAuction) {
+    const now = new Date();
+    return now >= this.auctionDetails?.startTime && now <= this.auctionDetails?.endTime;
+  }
+  return this.stock > 0;
+});
+
+// Virtual for remaining auction time in milliseconds
+productSchema.virtual("auctionTimeRemaining").get(function () {
+  if (!this.isAuction || !this.auctionDetails?.endTime) return 0;
+  const remaining = new Date(this.auctionDetails.endTime) - new Date();
+  return remaining > 0 ? remaining : 0;
 });
 
 const Product = mongoose.model("Product", productSchema);

@@ -4,7 +4,10 @@ import API from "../api/axios"; // Adjust path to your API file
 
 const useProductStore = create((set, get) => ({
   products: [],
+  shoes: [],
   magazines: [],
+  merchandise: [],
+  leatherGoods: [],
   loading: false,
   error: null,
 
@@ -14,10 +17,14 @@ const useProductStore = create((set, get) => ({
       const response = await API.get("/products");
       const allProducts = response.data;
 
+
       set({
         products: allProducts,
+        shoes: allProducts.filter((p) => p.category === "Shoe"),
         // Automatically filter magazines for the archive
         magazines: allProducts.filter((p) => p.category === "Magazine"),
+        merchandise: allProducts.filter((p) => p.category === "Merchandise"),
+        leatherGoods: allProducts.filter((p) => p.category === "Leather Goods"),
         loading: false,
       });
     } catch (err) {

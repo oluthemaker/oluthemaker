@@ -1,11 +1,11 @@
 export const ATELIER_MASTER_MENU = {
   styles: ["Oxford", "Loafer", "Derby", "Monk Strap", "Chelsea Boot"],
-  lasts: [
-    "Lagos (Chiseled)",
-    "London (Round)",
-    "Milan (Slim)",
-    "Abuja (Soft Square)",
-  ],
+  // lasts: [
+  //   "Lagos (Chiseled)",
+  //   "London (Round)",
+  //   "Milan (Slim)",
+  //   "Abuja (Soft Square)",
+  // ],
   materials: [
     "Museum Calf",
     "Box Calf",
@@ -13,8 +13,8 @@ export const ATELIER_MASTER_MENU = {
     "Suede",
     "Pebble Grain",
   ],
+  colors: ["navy", "black", "brown"],
   constructions: ["Hand-Welted", "Goodyear Welted", "Blake Stitched"],
-  soles: ["Single Leather", "Double Leather", "Rubber (Dainite)", "Vibram"],
   widths: ["D (Standard)", "E (Wide)", "EE (Extra Wide)"],
   sizes: [38, 39, 40, 41, 42, 43, 44, 45, 46, 47],
 };

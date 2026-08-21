@@ -15,6 +15,7 @@ const useAdminStore = create((set) => ({
       set({ isLoading: false });
       return { success: true, data: res.data };
     } catch (error) {
+      console.error(error);
       const message =
         error.response?.data?.message || "Failed to publish commission";
       set({ isLoading: false, error: message });

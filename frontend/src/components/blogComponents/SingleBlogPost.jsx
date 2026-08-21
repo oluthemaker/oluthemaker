@@ -68,12 +68,6 @@ const SingleBlogPost = () => {
     navigate("/journal");
   };
 
-  useSEO({
-    title: currentBlog?.title,
-    description: currentBlog?.excerpt,
-    ogImage: currentBlog?.headerImage,
-    ogType: "article",
-  });
 
   useSEO({
     title: currentBlog?.title,

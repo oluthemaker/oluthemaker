@@ -76,7 +76,7 @@ const Home = () => {
             to={`/journal/${featuredBlog?.slug}`}
             className="inline-block mt-10 px-10 py-4 border border-white text-white text-[10px] tracking-[0.3em] font-sans font-bold hover:bg-white hover:text-atelier-ink transition-all duration-500 uppercase"
           >
-            DISCOVER
+            READ More
           </Link>
         </div>
       </section>

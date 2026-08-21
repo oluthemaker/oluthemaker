@@ -3,25 +3,37 @@ import useAdminStore from "../../store/useAdminStore";
 import { atelierToast } from "../../utils/Toaster";
 import { ATELIER_MASTER_MENU } from "../../utils/MasterMenu";
 
+const SUBCATEGORY_MAP = {
+  "Leather Goods": ["Wallets", "Belts", "Bags", "Cardholders", "Briefcases"],
+  Merchandise: ["T-Shirts", "Caps", "Totes", "Socks", "Accessories", "Mugs", "Pottery", "Painting"],
+  Shoe: ["Oxfords", "Loafers", "Derbies", "Boots", "Monkstraps"],
+  Magazine: ["Physical", "Digital", "Special Edition"],
+};
+
 const AdminProductForm = () => {
   const { createProduct, isLoading } = useAdminStore();
   const [scriptLoaded, setScriptLoaded] = useState(false);
+
   const initialFormState = {
     name: "",
     description: "",
     price: "",
     stock: 0,
     category: "Shoe",
+    subCategory: "",
+    isAuction: false,
     images: [],
+    auctionDetails: {
+      startingBid: "",
+      minBidIncrement: 5000,
+      startTime: "",
+      endTime: "",
+      reservePrice: "",
+    },
     shoeDetails: {
-      style: ["Oxford"], // Now Arrays
+      style: ["Oxford"],
       material: ["Museum Calf"],
       last: ["Lagos (Chiseled)"],
-      construction: ["Hand-Welted"],
-      soles: ["Single Leather"],
-      width: ["D (Standard)"],
-      sizes: [40, 41, 42, 43, 44, 45],
-      isBespoke: true,
     },
     magazineDetails: {
       issueNumber: "",
@@ -43,89 +55,10 @@ const AdminProductForm = () => {
     document.body.appendChild(script);
 
     return () => {
-      document.body.removeChild(script); // Cleanup on unmount
+      document.body.removeChild(script);
     };
   }, []);
 
-  // --- LOGIC: MULTI-SELECT TOGGLE ---
-  const toggleOption = (section, field, value) => {
-    setFormData((prev) => {
-      const currentValues = prev[section][field];
-      const newValues = currentValues.includes(value)
-        ? currentValues.filter((v) => v !== value) // Remove
-        : [...currentValues, value]; // Add
-
-      return {
-        ...prev,
-        [section]: { ...prev[section], [field]: newValues },
-      };
-    });
-  };
-
-  const selectAllOptions = (field, allOptions) => {
-    setFormData((prev) => ({
-      ...prev,
-      shoeDetails: {
-        ...prev.shoeDetails,
-        [field]:
-          prev.shoeDetails[field].length === allOptions.length
-            ? []
-            : allOptions,
-      },
-    }));
-  };
-
-  // --- CLOUDINARY LOGIC ---
-  const handleUpload = () => {
-    if (!scriptLoaded || !window.cloudinary) {
-      atelierToast("Cloudinary script is still loading...");
-      return;
-    }
-
-    window.cloudinary.openUploadWidget(
-      {
-        cloudName: import.meta.env.VITE_CLOUD_NAME,
-        uploadPreset: import.meta.env.VITE_PRESET_NAME,
-        sources: ["local", "url"],
-        multiple: true,
-        styles: {
-          palette: {
-            window: "#FFFFFF",
-            sourceBg: "#F4F1EA", // atelier-paper
-            windowBorder: "#1A1A1A", // atelier-ink
-            tabIcon: "#1A1A1A",
-            inactiveTabIcon: "#8E8E8E",
-            menuIcons: "#1A1A1A",
-            link: "#1A1A1A",
-            action: "#1A1A1A",
-            inProgress: "#0078FF",
-            complete: "#20B832",
-            error: "#E01919",
-            textDark: "#1A1A1A",
-            textLight: "#FFFFFF",
-          },
-          fonts: {
-            default: null,
-            "'Helvetica Neue', Helvetica, Arial, sans-serif": {
-              url: null,
-              active: true,
-            },
-          },
-        },
-      },
-      (error, result) => {
-        if (!error && result && result.event === "success") {
-          setFormData((prev) => ({
-            ...prev,
-            images: [...prev.images, result.info.secure_url],
-          }));
-          atelierToast("Image added to gallery");
-        }
-      },
-    );
-  };
-
-  // 2. Generic change handler for nested objects
   const handleChange = (e, section = null) => {
     const { name, value, type, checked } = e.target;
     const finalValue = type === "checkbox" ? checked : value;
@@ -140,16 +73,73 @@ const AdminProductForm = () => {
     }
   };
 
-  // 3. Updated Submit Handler
+  const toggleOption = (section, field, value) => {
+    setFormData((prev) => {
+      const currentValues = prev[section][field] || [];
+      const newValues = currentValues.includes(value)
+        ? currentValues.filter((v) => v !== value)
+        : [...currentValues, value];
+
+      return {
+        ...prev,
+        [section]: { ...prev[section], [field]: newValues },
+      };
+    });
+  };
+
+  // Image manipulation handlers
+  const removeImage = (indexToRemove) => {
+    setFormData((prev) => ({
+      ...prev,
+      images: prev.images.filter((_, index) => index !== indexToRemove),
+    }));
+  };
+
+  const moveImage = (index, direction) => {
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= formData.images.length) return;
+
+    setFormData((prev) => {
+      const updatedImages = [...prev.images];
+      const [movedImage] = updatedImages.splice(index, 1);
+      updatedImages.splice(targetIndex, 0, movedImage);
+      return { ...prev, images: updatedImages };
+    });
+  };
+
+  const handleUpload = () => {
+    if (!scriptLoaded || !window.cloudinary) {
+      atelierToast("Cloudinary script is still loading...");
+      return;
+    }
+
+    window.cloudinary.openUploadWidget(
+      {
+        cloudName: import.meta.env.VITE_CLOUD_NAME,
+        uploadPreset: import.meta.env.VITE_PRESET_NAME,
+        sources: ["local", "url"],
+        multiple: true,
+      },
+      (error, result) => {
+        if (!error && result && result.event === "success") {
+          setFormData((prev) => ({
+            ...prev,
+            images: [...prev.images, result.info.secure_url],
+          }));
+          atelierToast("Image added to gallery");
+        }
+      }
+    );
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     const payload = {
       ...formData,
       price: Number(formData.price),
-      stock: Number(formData.stock),
-      // Clean up payload based on category
-      shoeDetails:
-        formData.category === "Shoe" ? formData.shoeDetails : undefined,
+      stock: formData.isAuction ? 1 : Number(formData.stock),
+      shoeDetails: formData.category === "Shoe" ? formData.shoeDetails : undefined,
       magazineDetails:
         formData.category === "Magazine"
           ? {
@@ -159,29 +149,38 @@ const AdminProductForm = () => {
               year: Number(formData.magazineDetails.year),
             }
           : undefined,
+      auctionDetails: formData.isAuction ? formData.auctionDetails : undefined,
     };
 
     const result = await createProduct(payload);
     if (result.success) {
-      atelierToast(`${formData.category} published.`);
+      atelierToast(`${formData.category} published successfully.`);
       setFormData(initialFormState);
+    } else {
+      atelierToast(result.error || "Failed to publish commission", "error");
     }
   };
 
   return (
     <section className="p-8 md:p-12 bg-atelier-paper border border-atelier-ink/10">
-      <header className="flex justify-between items-end mb-12 border-b border-atelier-ink/10 pb-6">
-        <h2 className="text-2xl font-serif italic">New Commission</h2>
-        <div className="flex gap-4">
-          {["Shoe", "Magazine"].map((cat) => (
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 border-b border-atelier-ink/10 pb-6 gap-4">
+        <div>
+          <h2 className="text-2xl font-serif italic">New Commission</h2>
+          <span className="text-[9px] tracking-[0.3em] uppercase opacity-40 font-bold">
+            Catalog & Reserve System
+          </span>
+        </div>
+
+        <div className="flex flex-wrap gap-4">
+          {["Shoe", "Magazine", "Leather Goods", "Merchandise"].map((cat) => (
             <button
               key={cat}
               type="button"
-              onClick={() => setFormData({ ...formData, category: cat })}
+              onClick={() => setFormData({ ...formData, category: cat, subCategory: "" })}
               className={`text-[10px] tracking-[0.2em] uppercase font-bold pb-1 transition-all ${
                 formData.category === cat
-                  ? "border-b border-atelier-ink opacity-100"
-                  : "opacity-40"
+                  ? "border-b-2 border-atelier-ink opacity-100"
+                  : "opacity-40 hover:opacity-100"
               }`}
             >
               {cat}
@@ -190,11 +189,7 @@ const AdminProductForm = () => {
         </div>
       </header>
 
-      <form
-        onSubmit={handleSubmit}
-        className="grid grid-cols-1 lg:grid-cols-2 gap-12"
-      >
-        {/* --- LEFT COLUMN: GENERAL INFO --- */}
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         <div className="space-y-8">
           <div>
             <label className="text-[9px] tracking-[0.3em] uppercase opacity-50 block mb-2 font-bold">
@@ -204,20 +199,35 @@ const AdminProductForm = () => {
               name="name"
               value={formData.name}
               onChange={handleChange}
-              placeholder={
-                formData.category === "Shoe"
-                  ? "The Lagos Oxford"
-                  : "Issue No. 04 - The Autumn Dossier"
-              }
+              placeholder="The Atelier Piece"
               className="w-full bg-transparent border-b border-atelier-ink/20 py-2 focus:border-atelier-ink outline-none font-serif italic text-lg"
               required
             />
           </div>
 
+          <div>
+            <label className="text-[9px] tracking-[0.3em] uppercase opacity-50 block mb-2 font-bold">
+              Sub Category
+            </label>
+            <select
+              name="subCategory"
+              value={formData.subCategory}
+              onChange={handleChange}
+              className="w-full bg-transparent border-b border-atelier-ink/20 py-2 outline-none font-sans text-sm"
+            >
+              <option value="">Select Subcategory...</option>
+              {SUBCATEGORY_MAP[formData.category]?.map((sub) => (
+                <option key={sub} value={sub}>
+                  {sub}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div className="grid grid-cols-2 gap-8">
             <div>
               <label className="text-[9px] tracking-[0.3em] uppercase opacity-50 block mb-2 font-bold">
-                Price (₦)
+                {formData.isAuction ? "Starting Price (₦)" : "Price (₦)"}
               </label>
               <input
                 type="number"
@@ -228,18 +238,20 @@ const AdminProductForm = () => {
                 required
               />
             </div>
-            <div>
-              <label className="text-[9px] tracking-[0.3em] uppercase opacity-50 block mb-2 font-bold">
-                Initial Stock
-              </label>
-              <input
-                type="number"
-                name="stock"
-                value={formData.stock}
-                onChange={handleChange}
-                className="w-full bg-transparent border-b border-atelier-ink/20 py-2 focus:border-atelier-ink outline-none font-sans"
-              />
-            </div>
+            {!formData.isAuction && (
+              <div>
+                <label className="text-[9px] tracking-[0.3em] uppercase opacity-50 block mb-2 font-bold">
+                  Initial Stock
+                </label>
+                <input
+                  type="number"
+                  name="stock"
+                  value={formData.stock}
+                  onChange={handleChange}
+                  className="w-full bg-transparent border-b border-atelier-ink/20 py-2 focus:border-atelier-ink outline-none font-sans"
+                />
+              </div>
+            )}
           </div>
 
           <div>
@@ -255,113 +267,191 @@ const AdminProductForm = () => {
             />
           </div>
 
-          {/* Image Upload Area */}
-          <div className="p-8 border border-dashed border-atelier-ink/20 text-center hover:bg-atelier-ink/5 transition-colors cursor-pointer">
-            <div
-              onClick={handleUpload}
-              className="p-8 border border-dashed border-atelier-ink/20 text-center hover:bg-atelier-ink/5 transition-colors cursor-pointer"
-            >
-              {formData.images.length > 0 ? (
-                <div className="grid grid-cols-3 gap-2">
-                  {formData.images.map((img, i) => (
+          {/* INTERACTIVE MEDIA GALLERY */}
+          <div className="space-y-4">
+            <label className="text-[9px] tracking-[0.3em] uppercase opacity-50 block font-bold">
+              Gallery Media ({formData.images.length})
+            </label>
+
+            {formData.images.length > 0 && (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {formData.images.map((img, index) => (
+                  <div
+                    key={index}
+                    className="relative group border border-atelier-ink/10 bg-atelier-ink/5 p-1"
+                  >
                     <img
-                      key={i}
                       src={img}
-                      alt="preview"
-                      className="w-full h-20 object-cover border border-atelier-ink/10"
+                      alt={`Preview ${index + 1}`}
+                      className="w-full h-24 object-cover"
                     />
-                  ))}
-                  <div className="flex items-center justify-center text-[10px] uppercase font-bold opacity-50">
-                    + Add More
+
+                    {/* Cover Image Indicator */}
+                    {index === 0 && (
+                      <span className="absolute top-2 left-2 bg-atelier-ink text-white text-[8px] tracking-widest uppercase px-1.5 py-0.5 font-bold">
+                        Cover
+                      </span>
+                    )}
+
+                    {/* Action Overlay */}
+                    <div className="absolute inset-0 bg-atelier-ink/75 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-2">
+                      <div className="flex justify-end">
+                        <button
+                          type="button"
+                          onClick={() => removeImage(index)}
+                          className="text-white hover:text-red-400 text-xs font-bold px-1"
+                          title="Remove Image"
+                        >
+                          ✕
+                        </button>
+                      </div>
+
+                      <div className="flex justify-between items-center text-white">
+                        <button
+                          type="button"
+                          onClick={() => moveImage(index, -1)}
+                          disabled={index === 0}
+                          className="disabled:opacity-20 hover:text-atelier-tan text-xs font-bold px-1"
+                          title="Move Left"
+                        >
+                          ←
+                        </button>
+                        <span className="text-[9px] font-mono">{index + 1}</span>
+                        <button
+                          type="button"
+                          onClick={() => moveImage(index, 1)}
+                          disabled={index === formData.images.length - 1}
+                          className="disabled:opacity-20 hover:text-atelier-tan text-xs font-bold px-1"
+                          title="Move Right"
+                        >
+                          →
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <p className="text-[10px] tracking-widest uppercase font-bold opacity-50">
-                  Click to Upload Media via Cloudinary
-                </p>
-              )}
-            </div>
+                ))}
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={handleUpload}
+              className="w-full p-4 border border-dashed border-atelier-ink/20 text-center hover:bg-atelier-ink/5 transition-colors text-[10px] tracking-widest uppercase font-bold opacity-70 hover:opacity-100"
+            >
+              + Upload {formData.images.length > 0 ? "More Media" : "Gallery Media"}
+            </button>
           </div>
         </div>
 
-        {/* --- RIGHT COLUMN: CONDITIONAL DETAILS --- */}
         <div className="space-y-8">
-          {/* SHOE SPECIFICS */}
-          {formData.category === "Shoe" && (
-            <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
-              <h3 className="text-[11px] tracking-[0.3em] uppercase font-bold border-b border-atelier-ink/10 pb-2">
-                Configuration Matrix
-              </h3>
+          <div className="p-6 border border-atelier-ink/10 bg-atelier-ink/5 space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-xs tracking-[0.2em] uppercase font-bold">
+                  Auction Mode
+                </h3>
+                <p className="text-[10px] opacity-60 font-serif italic">
+                  List this piece as a timed bidding event.
+                </p>
+              </div>
+              <input
+                type="checkbox"
+                name="isAuction"
+                id="isAuction"
+                checked={formData.isAuction}
+                onChange={handleChange}
+                className="w-5 h-5 accent-atelier-ink cursor-pointer"
+              />
+            </div>
 
-              {[
-                {
-                  label: "Styles",
-                  key: "style",
-                  options: ATELIER_MASTER_MENU.styles,
-                },
-                {
-                  label: "Lasts",
-                  key: "last",
-                  options: ATELIER_MASTER_MENU.lasts,
-                },
-                {
-                  label: "Materials",
-                  key: "material",
-                  options: ATELIER_MASTER_MENU.materials,
-                },
-                {
-                  label: "Construction",
-                  key: "construction",
-                  options: ATELIER_MASTER_MENU.constructions,
-                },
-                {
-                  label: "Soles",
-                  key: "soles",
-                  options: ATELIER_MASTER_MENU.soles,
-                },
-                {
-                  label: "Widths",
-                  key: "width",
-                  options: ATELIER_MASTER_MENU.widths,
-                },
-                {
-                  label: "Sizes",
-                  key: "sizes",
-                  options: ATELIER_MASTER_MENU.sizes,
-                },
-              ].map((field) => (
-                <div key={field.key} className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <label className="text-[9px] tracking-[0.2em] uppercase opacity-50 font-bold">
-                      {field.label}
+            {formData.isAuction && (
+              <div className="space-y-4 pt-4 border-t border-atelier-ink/10 animate-in fade-in duration-300">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[8px] tracking-[0.2em] uppercase opacity-60 block mb-1 font-bold">
+                      Auction Start
                     </label>
-                    <button
-                      type="button"
-                      onClick={() => selectAllOptions(field.key, field.options)}
-                      className="text-[8px] uppercase underline opacity-40 hover:opacity-100"
-                    >
-                      {formData.shoeDetails[field.key].length ===
-                      field.options.length
-                        ? "Deselect All"
-                        : "Select All"}
-                    </button>
+                    <input
+                      type="datetime-local"
+                      name="startTime"
+                      value={formData.auctionDetails.startTime}
+                      onChange={(e) => handleChange(e, "auctionDetails")}
+                      className="w-full bg-transparent border-b border-atelier-ink/20 py-1 text-xs outline-none"
+                      required={formData.isAuction}
+                    />
                   </div>
+                  <div>
+                    <label className="text-[8px] tracking-[0.2em] uppercase opacity-60 block mb-1 font-bold">
+                      Auction End
+                    </label>
+                    <input
+                      type="datetime-local"
+                      name="endTime"
+                      value={formData.auctionDetails.endTime}
+                      onChange={(e) => handleChange(e, "auctionDetails")}
+                      className="w-full bg-transparent border-b border-atelier-ink/20 py-1 text-xs outline-none"
+                      required={formData.isAuction}
+                    />
+                  </div>
+                </div>
 
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[8px] tracking-[0.2em] uppercase opacity-60 block mb-1 font-bold">
+                      Min Increment (₦)
+                    </label>
+                    <input
+                      type="number"
+                      name="minBidIncrement"
+                      value={formData.auctionDetails.minBidIncrement}
+                      onChange={(e) => handleChange(e, "auctionDetails")}
+                      className="w-full bg-transparent border-b border-atelier-ink/20 py-1 text-xs outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[8px] tracking-[0.2em] uppercase opacity-60 block mb-1 font-bold">
+                      Reserve Price (₦)
+                    </label>
+                    <input
+                      type="number"
+                      name="reservePrice"
+                      value={formData.auctionDetails.reservePrice}
+                      onChange={(e) => handleChange(e, "auctionDetails")}
+                      className="w-full bg-transparent border-b border-atelier-ink/20 py-1 text-xs outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {formData.category === "Shoe" && (
+            <div className="space-y-6">
+              <h3 className="text-[11px] tracking-[0.3em] uppercase font-bold border-b border-atelier-ink/10 pb-2">
+                Shoe Specifications
+              </h3>
+              {[
+                { label: "Styles", key: "style", options: ATELIER_MASTER_MENU.styles },
+                { label: "Sizes", key: "sizes", options: ATELIER_MASTER_MENU.sizes },
+                { label: "Colors", key: "color", options: ATELIER_MASTER_MENU.colors },
+                { label: "Materials", key: "material", options: ATELIER_MASTER_MENU.materials },
+              ].map((field) => (
+                <div key={field.key} className="space-y-2">
+                  <label className="text-[9px] tracking-[0.2em] uppercase opacity-50 font-bold block">
+                    {field.label}
+                  </label>
                   <div className="flex flex-wrap gap-2">
                     {field.options.map((opt) => {
-                      const isActive =
-                        formData.shoeDetails[field.key].includes(opt);
+                      const isActive = formData.shoeDetails[field.key]?.includes(opt);
                       return (
                         <button
                           key={opt}
                           type="button"
-                          onClick={() =>
-                            toggleOption("shoeDetails", field.key, opt)
-                          }
-                          className={`px-3 py-1.5 text-[10px] border transition-all duration-300 ${
+                          onClick={() => toggleOption("shoeDetails", field.key, opt)}
+                          className={`px-3 py-1 text-[10px] border transition-all ${
                             isActive
-                              ? "bg-atelier-ink text-atelier-paper border-atelier-ink"
-                              : "border-atelier-ink/10 opacity-60 hover:opacity-100"
+                              ? "bg-atelier-ink text-white border-atelier-ink"
+                              : "border-atelier-ink/10 opacity-60"
                           }`}
                         >
                           {opt}
@@ -374,112 +464,39 @@ const AdminProductForm = () => {
             </div>
           )}
 
-          {/* MAGAZINE SPECIFICS */}
           {formData.category === "Magazine" && (
-            <div className="space-y-6 animate-in fade-in duration-300">
+            <div className="space-y-4">
               <h3 className="text-[11px] tracking-[0.3em] uppercase font-bold border-b border-atelier-ink/10 pb-2">
                 Editorial Specifications
               </h3>
-
-              <div className="grid grid-cols-2 gap-6">
-                <div>
-                  <label className="text-[9px] tracking-[0.2em] uppercase opacity-50 block mb-1 font-bold">
-                    Issue Number
-                  </label>
-                  <input
-                    type="number"
-                    name="issueNumber"
-                    value={formData.magazineDetails.issueNumber}
-                    onChange={(e) => handleChange(e, "magazineDetails")}
-                    className="w-full bg-transparent border-b border-atelier-ink/20 py-2 outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="text-[9px] tracking-[0.2em] uppercase opacity-50 block mb-1 font-bold">
-                    Page Count
-                  </label>
-                  <input
-                    type="number"
-                    name="pages"
-                    value={formData.magazineDetails.pages}
-                    onChange={(e) => handleChange(e, "magazineDetails")}
-                    className="w-full bg-transparent border-b border-atelier-ink/20 py-2 outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="text-[9px] tracking-[0.2em] uppercase opacity-50 block mb-1 font-bold">
-                    Publication Month
-                  </label>
-                  <select
-                    name="month"
-                    value={formData.magazineDetails.month}
-                    onChange={(e) => handleChange(e, "magazineDetails")}
-                    className="w-full bg-transparent border-b border-atelier-ink/20 py-2 text-sm outline-none"
-                  >
-                    <option value="">Select Month...</option>
-                    {[
-                      "January",
-                      "February",
-                      "March",
-                      "April",
-                      "May",
-                      "June",
-                      "July",
-                      "August",
-                      "September",
-                      "October",
-                      "November",
-                      "December",
-                    ].map((m) => (
-                      <option key={m} value={m}>
-                        {m}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-[9px] tracking-[0.2em] uppercase opacity-50 block mb-1 font-bold">
-                    Year
-                  </label>
-                  <input
-                    type="number"
-                    name="year"
-                    value={formData.magazineDetails.year}
-                    onChange={(e) => handleChange(e, "magazineDetails")}
-                    className="w-full bg-transparent border-b border-atelier-ink/20 py-2 outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="mt-6 flex items-center gap-3">
+              <div className="grid grid-cols-2 gap-4">
                 <input
-                  type="checkbox"
-                  name="isDigital"
-                  id="isDigital"
-                  checked={formData.magazineDetails.isDigital}
+                  type="number"
+                  placeholder="Issue Number"
+                  name="issueNumber"
+                  value={formData.magazineDetails.issueNumber}
                   onChange={(e) => handleChange(e, "magazineDetails")}
-                  className="accent-atelier-ink w-4 h-4 cursor-pointer"
+                  className="bg-transparent border-b border-atelier-ink/20 py-2 text-xs outline-none"
                 />
-                <label
-                  htmlFor="isDigital"
-                  className="text-[10px] tracking-widest uppercase cursor-pointer"
-                >
-                  Digital Release (PDF)
-                </label>
+                <input
+                  type="number"
+                  placeholder="Page Count"
+                  name="pages"
+                  value={formData.magazineDetails.pages}
+                  onChange={(e) => handleChange(e, "magazineDetails")}
+                  className="bg-transparent border-b border-atelier-ink/20 py-2 text-xs outline-none"
+                />
               </div>
             </div>
           )}
 
-          {/* Submit */}
-          <div className="pt-8 mt-8">
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-atelier-ink text-white py-4 text-[10px] tracking-widest uppercase font-bold hover:bg-atelier-tan transition-all col-span-2 disabled:opacity-50"
-            >
-              {isLoading ? "Validating with Atelier..." : "Confirm Publication"}
-            </button>
-          </div>
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full bg-atelier-ink text-white py-4 text-[10px] tracking-widest uppercase font-bold hover:bg-atelier-tan transition-all disabled:opacity-50 mt-8"
+          >
+            {isLoading ? "Publishing Piece..." : "Confirm & Publish Piece"}
+          </button>
         </div>
       </form>
     </section>

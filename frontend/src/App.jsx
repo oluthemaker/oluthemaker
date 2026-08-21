@@ -29,7 +29,10 @@ import ResetPassword from "./pages/ResetPassword";
 import PaymentPage from "./pages/PaymentPage";
 import Commission from "./pages/Commission";
 import Qr from "./pages/Qr";
-
+import Footwear from "./pages/Footwear";
+import Merchandise from "./pages/Merchandise";
+import Auctions from "./pages/Auctions";
+import LeatherGoods from "./pages/LeatherGoods";
 
 //Footer Pages
 import About from "./pages/footerpages/About";
@@ -57,10 +60,14 @@ function App() {
           <BackToTop />
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/auctions" element={<Auctions />} />
             <Route path="/store" element={<Store />} />
-            <Route path="/store/:slug" element={<ProductDetail />} />
+            <Route path="/footwear" element={<Footwear />} />
+            <Route path="/leather-goods" element={<LeatherGoods />} />
+            <Route path="/merchandise" element={<Merchandise />} />
             <Route path="/commission" element={<Commission />} />
             <Route path="/magazine" element={<MagazineArchive />} />
+            <Route path="/product/:slug" element={<ProductDetail />} />
             <Route path="/qr" element={<Qr />} />
             <Route path="/magazine/:slug" element={<MagazineDetail />} />
             <Route path="/auth" element={<Auth />} />
