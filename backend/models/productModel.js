@@ -9,7 +9,7 @@ const productSchema = new mongoose.Schema(
     images: [{ type: String }], // Array of URLs (Cloudinary/S3)
     category: {
       type: String,
-      enum: ["Shoe", "Magazine", "Leather Goods", "Merchandise"],
+      enum: ["Shoe", "Magazine", "Leather Goods", "Merchandise", "Auction"],
       required: true,
     },
     // NEW: Subcategory field

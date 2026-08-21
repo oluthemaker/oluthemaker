@@ -10,7 +10,7 @@ const BENTO_ITEMS = [
     subtitle: "Timed Collector Bidding",
     description: "1-of-1 archival prototypes, bespoke trial pieces, and rare material releases.",
     image: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=1200&auto=format&fit=crop",
-    link: "/auctions",
+    link: "/auction",
     tag: "Exclusives",
   },
   {

@@ -60,7 +60,7 @@ function App() {
           <BackToTop />
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/auctions" element={<Auctions />} />
+            <Route path="/auction" element={<Auctions />} />
             <Route path="/store" element={<Store />} />
             <Route path="/footwear" element={<Footwear />} />
             <Route path="/leather-goods" element={<LeatherGoods />} />
