@@ -38,9 +38,9 @@ const ProductCard = ({ product, index = 0 }) => {
             {product.subCategory || product.category || "Atelier"}
           </span>
 
-          <div className="w-8 h-8 rounded-full border border-atelier-ink/20 flex items-center justify-center group-hover:bg-atelier-ink group-hover:text-white transition-all">
+          {/* <div className="w-8 h-8 rounded-full border border-atelier-ink/20 flex items-center justify-center group-hover:bg-atelier-ink group-hover:text-white transition-all">
             <span className="text-xs">↗</span>
-          </div>
+          </div>*/}
         </div>
 
         {/* Bottom Content Area */}

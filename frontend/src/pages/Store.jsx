@@ -96,9 +96,9 @@ const Store = () => {
                   <span className="text-[9px] tracking-[0.3em] uppercase font-bold font-mono bg-atelier-paper/80 backdrop-blur-sm px-3 py-1 border border-atelier-ink/10">
                     {item.tag}
                   </span>
-                  <div className="w-8 h-8 rounded-full border border-atelier-ink/20 flex items-center justify-center group-hover:bg-atelier-ink group-hover:text-white transition-all">
+                  {/* <div className="w-8 h-8 rounded-full border border-atelier-ink/20 flex items-center justify-center group-hover:bg-atelier-ink group-hover:text-white transition-all">
                     <span className="text-xs">↗</span>
-                  </div>
+                  </div>*/}
                 </div>
 
                 {/* Bottom Content Area */}
