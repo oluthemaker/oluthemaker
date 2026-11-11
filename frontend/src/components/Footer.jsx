@@ -27,6 +27,7 @@ const Footer = ({ navLinks = [] }) => {
     { name: "Contact", path: "/contact" },
     { name: "FAQ", path: "/faq" },
     { name: "Shipping", path: "/shipping" },
+    { name: "Track an Order", path: "/order-lookup" },
     { name: "Terms", path: "/terms" },
     { name: "Privacy", path: "/privacy" },
     { name: "Cookies", path: "/cookies" },

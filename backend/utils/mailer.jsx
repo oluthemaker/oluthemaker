@@ -10,6 +10,9 @@ import { ResetPasswordEmail } from "../emails/ResetPasswordEmail.jsx";
 import { OrderConfirmedEmail } from "../emails/OrderConfirmedEmail.jsx";
 import PaymentReminderEmail from "../emails/PaymentReminderEmail.jsx";
 import { TicketResponseEmail } from "../emails/TicketResponseEmail.jsx";
+import { OrderStatusUpdateEmail } from "../emails/OrderStatusUpdateEmail.jsx";
+import { OrderLookupCodeEmail } from "../emails/OrderLookupCodeEmail.jsx";
+import { AbandonedCartEmail } from "../emails/AbandonedCartEmail.jsx";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM_EMAIL = "Olú The Maker <info@oluthemaker.com>";
@@ -32,6 +35,8 @@ export const sendEmail = async (type, to, data) => {
         <OrderConfirmedEmail
           orderId={data.orderId}
           totalPrice={data.totalPrice}
+          currency={data.currency || "NGN"}
+          manualReview={Boolean(data.manualReview)}
           items={data.items}
         />
       );
@@ -43,7 +48,29 @@ export const sendEmail = async (type, to, data) => {
           name={data.name}
           orderId={data.orderId}
           totalPrice={data.totalPrice}
+          currency={data.currency || "NGN"}
           paymentLink={data.paymentLink}
+        />
+      );
+      break;
+    case "ABANDONED_CART":
+      subject = data.reminderNumber === 1 ? "Your selection is waiting" : "A final note about your selection";
+      component = <AbandonedCartEmail customerName={data.customerName} items={data.items} recoveryUrl={data.recoveryUrl} unsubscribeUrl={data.unsubscribeUrl} reminderNumber={data.reminderNumber} />;
+      break;
+    case "ORDER_LOOKUP_CODE":
+      subject = `Your order access code: ${data.orderReference}`;
+      component = <OrderLookupCodeEmail customerName={data.customerName} orderReference={data.orderReference} code={data.code} />;
+      break;
+    case "ORDER_STATUS_UPDATE":
+      subject = `Order Update: ${data.orderId}`;
+      component = (
+        <OrderStatusUpdateEmail
+          orderId={data.orderId}
+          customerName={data.customerName}
+          status={data.status}
+          note={data.note}
+          trackingNumber={data.trackingNumber}
+          trackingUrl={data.trackingUrl}
         />
       );
       break;

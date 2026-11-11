@@ -12,14 +12,17 @@ import connectDB from "./config/db.js";
 import productRoutes from "./routes/productRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
+import shippingRoutes from "./routes/shippingRoutes.js";
 import blogRoutes from "./routes/blogRoutes.js";
 import ticketRoutes from "./routes/ticketRoutes.js";
+import abandonedCartRoutes from "./routes/abandonedCartRoutes.js";
+import { getSitemap } from "./controllers/seoController.js";
+import { startAbandonedCartWorker } from "./workers/abandonedCartWorker.js";
 
 // Load environment variables
 dotenv.config();
 
-// Connect to Database
-connectDB();
+// Connect to Database before starting background work or accepting traffic.
 
 const app = express();
 app.set("trust proxy", 1);
@@ -66,6 +69,7 @@ app.use("/api/", apiLimiter);
 
 // --- ROUTES ---
 app.use("/api", globalLimiter);
+app.get("/api/seo/sitemap.xml", getSitemap);
 app.get("/", (req, res) => {
   res.send("Olu The Maker API is running...");
 });
@@ -73,6 +77,8 @@ app.get("/", (req, res) => {
 app.use("/api/products", productRoutes);
 app.use("/api/auth", userRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/shipping", shippingRoutes);
+app.use("/api/abandoned-carts", abandonedCartRoutes);
 app.use("/api/blogs", blogRoutes);
 app.use("/api/tickets", ticketRoutes);
 
@@ -83,8 +89,17 @@ app.get("/health", (req, res) => {
 // --- SERVER STARTUP ---
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(
-    `Server running in ${process.env.NODE_ENV || "development"} mode on port ${PORT}`,
-  );
+const startServer = async () => {
+  await connectDB();
+  startAbandonedCartWorker();
+  app.listen(PORT, () => {
+    console.log(
+      `Server running in ${process.env.NODE_ENV || "development"} mode on port ${PORT}`,
+    );
+  });
+};
+
+startServer().catch((error) => {
+  console.error("Server startup failed:", error.message);
+  process.exit(1);
 });

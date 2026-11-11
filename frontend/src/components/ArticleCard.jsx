@@ -10,6 +10,8 @@ const ArticleCard = ({ article }) => {
         <img
           src={article.headerImage}
           alt={article.title}
+          loading="lazy"
+          decoding="async"
           className="w-full h-full object-cover  group-hover:grayscale-0 transition-all duration-1000 ease-in-out"
         />
         {/* Subtle category overlay */}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Search } from "lucide-react";
 import { motion } from "framer-motion";
@@ -6,6 +6,7 @@ import ArticleCard from "../components/ArticleCard";
 import useProductStore from "../store/useProductStore";
 import useCartStore from "../store/useCartStore";
 import useSEO from "../hooks/useSEO";
+import { atelierToast } from "../utils/Toaster";
 
 const MagazineDetail = () => {
   const { slug } = useParams();
@@ -31,14 +32,40 @@ const MagazineDetail = () => {
     window.scrollTo(0, 0);
   }, [slug, getProductBySlug]);
 
+  const magazineStructuredData = useMemo(() => {
+    if (!issueData) return null;
+    return {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      name: issueData.name,
+      description: issueData.description,
+      image: [typeof issueData.images?.[0] === "string" ? issueData.images[0] : issueData.images?.[0]?.url, issueData.magazineDetails?.coverImage].filter(Boolean),
+      category: "Magazine",
+      brand: { "@type": "Brand", name: "Olú The Maker" },
+      offers: {
+        "@type": "Offer",
+        priceCurrency: "NGN",
+        price: Number(issueData.price || 0),
+        availability: issueData.status === "Pre-Order"
+          ? "https://schema.org/PreOrder"
+          : Number(issueData.stock || 0) > 0 || issueData.magazineDetails?.isDigital
+            ? "https://schema.org/InStock"
+            : "https://schema.org/OutOfStock",
+        url: `https://oluthemaker.com/magazine/${issueData.slug}`,
+      },
+    };
+  }, [issueData]);
+
   useSEO({
     title: issueData?.name,
     description: issueData?.description,
     canonical: issueData
       ? `https://oluthemaker.com/magazine/${issueData?.slug}`
       : undefined,
-    ogImage: issueData?.images?.[0]?.url,
-    ogType: "website",
+    ogImage: (typeof issueData?.images?.[0] === "string" ? issueData.images[0] : issueData?.images?.[0]?.url) || issueData?.magazineDetails?.coverImage,
+    ogType: "product",
+    noIndex: !issueData && !isInitialLoading,
+    structuredData: magazineStructuredData,
   });
 
 
@@ -74,10 +101,12 @@ const MagazineDetail = () => {
 
   // NEW: Dynamic Pricing Calculation
   // Adjust these multipliers or replace them with actual database fields if you have them!
+  // Until separate format prices are configured in the catalogue, use the
+  // server-owned product price for every format. Never invent a client-only price.
   const FORMAT_PRICES = {
     print: issueData?.price,
-    digital: Math.round(issueData?.price * 0.6), // Example: Digital is 60% of the print price
-    bundle: Math.round(issueData?.price * 1.3), // Example: Bundle is 130% of the print price
+    digital: issueData?.price,
+    bundle: issueData?.price,
   };
 
   const currentPrice = FORMAT_PRICES[selectedFormat];
@@ -87,13 +116,24 @@ const MagazineDetail = () => {
   );
 
   const handleAddToCart = () => {
-    addToCart({
-      id: issueData._id || slug,
-      name: issueData.name,
-      price: currentPrice,
-      image: issueData.images?.[0],
-      format: selectedFormat,
-    });
+    try {
+      addToCart({
+        _id: issueData._id,
+        id: issueData._id,
+        productId: issueData._id,
+        slug: issueData.slug,
+        name: issueData.name,
+        category: issueData.category,
+        price: currentPrice,
+        selectedPrice: currentPrice,
+        image: issueData.images?.[0] || issueData.magazineDetails?.coverImage,
+        format: selectedFormat,
+        availableStock: selectedFormat === "digital" ? null : Number(issueData.stock || 0),
+        stockTracked: selectedFormat !== "digital",
+      });
+    } catch (error) {
+      atelierToast(error.message || "Unable to add this issue.", "error");
+    }
   };
 
   return (
@@ -107,7 +147,7 @@ const MagazineDetail = () => {
               <img
                 src={issueData?.images?.[0]}
                 className="w-full h-full object-cover"
-                alt={name}
+                alt={issueData.name}
               />
               <div className="absolute inset-y-0 left-0 w-3 bg-black/10 blur-[1px]" />
             </div>

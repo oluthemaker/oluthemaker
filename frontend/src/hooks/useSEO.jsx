@@ -1,8 +1,25 @@
 import { useEffect } from "react";
 
-const SITE_NAME = "Olú the Maker";
+const SITE_NAME = "Olú The Maker";
 const SITE_URL = "https://oluthemaker.com";
-const DEFAULT_IMAGE = `https://res.cloudinary.com/ds78nckog/image/upload/v1785146735/IMG_0688_ny0nlp.png`;
+const DEFAULT_IMAGE = "https://res.cloudinary.com/ds78nckog/image/upload/v1785146735/IMG_0688_ny0nlp.png";
+const PRIVATE_PATHS = [
+  /^\/admin(?:\/|$)/,
+  /^\/auth(?:\/|$)/,
+  /^\/profile(?:\/|$)/,
+  /^\/checkout(?:\/|$)/,
+  /^\/payment(?:\/|$)/,
+  /^\/order(?:\/|$)/,
+  /^\/order-lookup(?:\/|$)/,
+  /^\/wishlist(?:\/|$)/,
+  /^\/cart(?:\/|$)/,
+  /^\/reset-password(?:\/|$)/,
+  /^\/forgot-password(?:\/|$)/,
+  /^\/journal\/(?:write|drafts|edit)(?:\/|$)/,
+];
+
+export const isPrivateSEOPath = (pathname = window.location.pathname) =>
+  PRIVATE_PATHS.some((pattern) => pattern.test(pathname));
 
 const useSEO = ({
   title,
@@ -18,11 +35,15 @@ const useSEO = ({
       ? `${title} | ${SITE_NAME}`
       : SITE_NAME;
 
-    const pageUrl =
-      canonical ||
-      `${SITE_URL}${window.location.pathname}`;
+    const pathname = window.location.pathname;
+    const pageUrl = canonical || `${SITE_URL}${pathname}`;
+    const effectiveNoIndex = noIndex || isPrivateSEOPath(pathname);
 
     const image = ogImage || DEFAULT_IMAGE;
+    const metaDescription = String(description || "Discover considered footwear, leather goods, menswear and editorial stories from Olú The Maker.")
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, 160);
 
     document.title = fullTitle;
 
@@ -81,7 +102,7 @@ const useSEO = ({
     setMetaTag(
       "name",
       "robots",
-      noIndex
+      effectiveNoIndex
         ? "noindex, nofollow"
         : "index, follow"
     );
@@ -93,7 +114,7 @@ const useSEO = ({
     setMetaTag(
       "name",
       "description",
-      description
+      metaDescription
     );
 
     // --------------------------------
@@ -109,7 +130,7 @@ const useSEO = ({
     setMetaTag(
       "property",
       "og:description",
-      description
+      metaDescription
     );
 
     setMetaTag(
@@ -167,7 +188,7 @@ const useSEO = ({
     setMetaTag(
       "name",
       "twitter:description",
-      description
+      metaDescription
     );
 
     setMetaTag(

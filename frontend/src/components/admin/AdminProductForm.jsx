@@ -1,504 +1,192 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { Plus, Trash2, Upload, X, CheckCircle2, AlertCircle } from "lucide-react";
 import useAdminStore from "../../store/useAdminStore";
 import { atelierToast } from "../../utils/Toaster";
-import { ATELIER_MASTER_MENU } from "../../utils/MasterMenu";
 
+const CATEGORIES = ["Shoe", "Magazine", "Leather Goods", "Merchandise"];
 const SUBCATEGORY_MAP = {
   "Leather Goods": ["Wallets", "Belts", "Bags", "Cardholders", "Briefcases"],
   Merchandise: ["T-Shirts", "Caps", "Totes", "Socks", "Accessories", "Mugs", "Pottery", "Painting"],
   Shoe: ["Oxfords", "Loafers", "Derbies", "Boots", "Monkstraps"],
   Magazine: ["Physical", "Digital", "Special Edition"],
 };
+const emptyProduct = {
+  name: "", description: "", price: "", sku: "", stock: 0, category: "Shoe", subCategory: "",
+  isAuction: false, images: [], variants: [], publicationStatus: "Draft", status: "Available",
+  auctionDetails: { startingBid: "", minBidIncrement: 5000, startTime: "", endTime: "", reservePrice: "" },
+  shoeDetails: { style: [], material: [], color: [], sizes: [] },
+  magazineDetails: { issueNumber: "", month: "", year: new Date().getFullYear(), pages: "", isDigital: false, fileUrl: "", excerpt: "" },
+};
 
-const AdminProductForm = () => {
-  const { createProduct, isLoading } = useAdminStore();
-  const [scriptLoaded, setScriptLoaded] = useState(false);
-
-  const initialFormState = {
-    name: "",
-    description: "",
-    price: "",
-    stock: 0,
-    category: "Shoe",
-    subCategory: "",
-    isAuction: false,
-    images: [],
-    auctionDetails: {
-      startingBid: "",
-      minBidIncrement: 5000,
-      startTime: "",
-      endTime: "",
-      reservePrice: "",
-    },
-    shoeDetails: {
-      style: ["Oxford"],
-      material: ["Museum Calf"],
-      last: ["Lagos (Chiseled)"],
-    },
-    magazineDetails: {
-      issueNumber: "",
-      month: "",
-      year: new Date().getFullYear(),
-      pages: "",
-      isDigital: false,
-      excerpt: "",
-    },
-  };
-
-  const [formData, setFormData] = useState(initialFormState);
+const AdminProductForm = ({ product = null, onSaved, onCancel }) => {
+  const { createProduct, updateProduct, validateProduct, isLoading } = useAdminStore();
+  const [scriptLoaded, setScriptLoaded] = useState(Boolean(window.cloudinary));
+  const [formData, setFormData] = useState(emptyProduct);
+  const [validationErrors, setValidationErrors] = useState([]);
+  const [validationChecked, setValidationChecked] = useState(false);
 
   useEffect(() => {
+    if (!product) {
+      setFormData(emptyProduct);
+      return;
+    }
+    setFormData({
+      ...emptyProduct,
+      ...product,
+      price: String(product.price ?? ""),
+      stock: Number(product.stock || 0),
+      images: product.images || [],
+      variants: (product.variants || []).map((variant) => ({ ...variant, stock: Number(variant.stock || 0) })),
+      shoeDetails: { ...emptyProduct.shoeDetails, ...(product.shoeDetails || {}) },
+      magazineDetails: { ...emptyProduct.magazineDetails, ...(product.magazineDetails || {}) },
+      auctionDetails: { ...emptyProduct.auctionDetails, ...(product.auctionDetails || {}) },
+    });
+    setValidationErrors([]);
+    setValidationChecked(false);
+  }, [product]);
+
+  useEffect(() => {
+    if (window.cloudinary) {
+      setScriptLoaded(true);
+      return undefined;
+    }
     const script = document.createElement("script");
     script.src = "https://upload-widget.cloudinary.com/global/all.js";
     script.async = true;
     script.onload = () => setScriptLoaded(true);
     document.body.appendChild(script);
-
-    return () => {
-      document.body.removeChild(script);
-    };
+    return () => { if (document.body.contains(script)) document.body.removeChild(script); };
   }, []);
 
-  const handleChange = (e, section = null) => {
-    const { name, value, type, checked } = e.target;
-    const finalValue = type === "checkbox" ? checked : value;
-
-    if (section) {
-      setFormData((prev) => ({
-        ...prev,
-        [section]: { ...prev[section], [name]: finalValue },
-      }));
-    } else {
-      setFormData((prev) => ({ ...prev, [name]: finalValue }));
-    }
+  const setField = (name, value) => {
+    setFormData((current) => ({ ...current, [name]: value }));
+    setValidationChecked(false);
   };
-
-  const toggleOption = (section, field, value) => {
-    setFormData((prev) => {
-      const currentValues = prev[section][field] || [];
-      const newValues = currentValues.includes(value)
-        ? currentValues.filter((v) => v !== value)
-        : [...currentValues, value];
-
-      return {
-        ...prev,
-        [section]: { ...prev[section], [field]: newValues },
-      };
-    });
+  const setNested = (section, name, value) => {
+    setFormData((current) => ({ ...current, [section]: { ...current[section], [name]: value } }));
+    setValidationChecked(false);
   };
-
-  // Image manipulation handlers
-  const removeImage = (indexToRemove) => {
-    setFormData((prev) => ({
-      ...prev,
-      images: prev.images.filter((_, index) => index !== indexToRemove),
-    }));
-  };
-
-  const moveImage = (index, direction) => {
-    const targetIndex = index + direction;
-    if (targetIndex < 0 || targetIndex >= formData.images.length) return;
-
-    setFormData((prev) => {
-      const updatedImages = [...prev.images];
-      const [movedImage] = updatedImages.splice(index, 1);
-      updatedImages.splice(targetIndex, 0, movedImage);
-      return { ...prev, images: updatedImages };
-    });
-  };
+  const addVariant = () => setField("variants", [...formData.variants, { sku: "", size: "", color: "", stock: 0, isActive: true }]);
+  const updateVariant = (index, name, value) => setField("variants", formData.variants.map((variant, i) => i === index ? { ...variant, [name]: value } : variant));
+  const removeVariant = (index) => setField("variants", formData.variants.filter((_, i) => i !== index));
 
   const handleUpload = () => {
-    if (!scriptLoaded || !window.cloudinary) {
-      atelierToast("Cloudinary script is still loading...");
+    if (!scriptLoaded || !window.cloudinary) return atelierToast("Cloudinary uploader is still loading.", "error");
+    window.cloudinary.openUploadWidget({
+      cloudName: import.meta.env.VITE_CLOUD_NAME,
+      uploadPreset: import.meta.env.VITE_PRESET_NAME,
+      sources: ["local", "url"], multiple: true, maxFiles: 20,
+    }, (error, result) => {
+      if (error) return atelierToast(error.message || "Image upload failed.", "error");
+      if (result?.event === "success") setFormData((current) => ({ ...current, images: [...current.images, result.info.secure_url] }));
+    });
+  };
+
+  const payload = useMemo(() => ({
+    ...formData,
+    price: Number(formData.price),
+    stock: formData.variants.length ? formData.variants.reduce((sum, variant) => sum + (variant.isActive ? Number(variant.stock || 0) : 0), 0) : Number(formData.stock || 0),
+    variants: formData.variants.map((variant) => ({ ...variant, stock: Number(variant.stock || 0), price: variant.price === "" ? undefined : (variant.price == null ? undefined : Number(variant.price)) })),
+    shoeDetails: formData.category === "Shoe" ? formData.shoeDetails : undefined,
+    magazineDetails: formData.category === "Magazine" ? formData.magazineDetails : undefined,
+    auctionDetails: formData.isAuction ? formData.auctionDetails : undefined,
+  }), [formData]);
+
+  const save = async (publicationStatus) => {
+    setValidationErrors([]);
+    if (publicationStatus === "Published") {
+      const validation = await validateProduct({ ...payload, productId: product?._id, publicationStatus });
+      setValidationErrors(validation.errors || []);
+      setValidationChecked(true);
+      if (!validation.valid) {
+        atelierToast("Product needs attention before it can be published.", "error");
+        return;
+      }
+    }
+    const result = product?._id
+      ? await updateProduct(product._id, { ...payload, publicationStatus })
+      : await createProduct({ ...payload, publicationStatus });
+    if (!result.success) {
+      setValidationErrors(result.errors?.length ? result.errors : [result.error]);
+      setValidationChecked(true);
+      atelierToast(result.error || "Unable to save product.", "error");
       return;
     }
-
-    window.cloudinary.openUploadWidget(
-      {
-        cloudName: import.meta.env.VITE_CLOUD_NAME,
-        uploadPreset: import.meta.env.VITE_PRESET_NAME,
-        sources: ["local", "url"],
-        multiple: true,
-      },
-      (error, result) => {
-        if (!error && result && result.event === "success") {
-          setFormData((prev) => ({
-            ...prev,
-            images: [...prev.images, result.info.secure_url],
-          }));
-          atelierToast("Image added to gallery");
-        }
-      }
-    );
+    atelierToast(publicationStatus === "Draft" ? "Draft saved." : "Product published successfully.");
+    onSaved?.(result.data);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const payload = {
-      ...formData,
-      price: Number(formData.price),
-      stock: formData.isAuction ? 1 : Number(formData.stock),
-      shoeDetails: formData.category === "Shoe" ? formData.shoeDetails : undefined,
-      magazineDetails:
-        formData.category === "Magazine"
-          ? {
-              ...formData.magazineDetails,
-              issueNumber: Number(formData.magazineDetails.issueNumber),
-              pages: Number(formData.magazineDetails.pages),
-              year: Number(formData.magazineDetails.year),
-            }
-          : undefined,
-      auctionDetails: formData.isAuction ? formData.auctionDetails : undefined,
-    };
-
-    const result = await createProduct(payload);
-    if (result.success) {
-      atelierToast(`${formData.category} published successfully.`);
-      setFormData(initialFormState);
-    } else {
-      atelierToast(result.error || "Failed to publish commission", "error");
-    }
-  };
+  const inputClass = "w-full bg-transparent border-b border-atelier-ink/20 py-2 outline-none focus:border-atelier-ink text-sm";
+  const labelClass = "block mb-2 text-[9px] tracking-[0.2em] uppercase font-bold opacity-50";
 
   return (
-    <section className="p-8 md:p-12 bg-atelier-paper border border-atelier-ink/10">
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 border-b border-atelier-ink/10 pb-6 gap-4">
+    <section className="border border-atelier-ink/10 bg-atelier-paper p-6 md:p-10 space-y-8">
+      <header className="flex items-start justify-between gap-4 border-b border-atelier-ink/10 pb-5">
         <div>
-          <h2 className="text-2xl font-serif italic">New Commission</h2>
-          <span className="text-[9px] tracking-[0.3em] uppercase opacity-40 font-bold">
-            Catalog & Reserve System
-          </span>
+          <h2 className="font-serif italic text-2xl">{product ? "Edit Product" : "Add Product"}</h2>
+          <p className="text-[9px] uppercase tracking-[0.25em] opacity-40 mt-1">Catalogue & inventory</p>
         </div>
-
-        <div className="flex flex-wrap gap-4">
-          {["Shoe", "Magazine", "Leather Goods", "Merchandise"].map((cat) => (
-            <button
-              key={cat}
-              type="button"
-              onClick={() => setFormData({ ...formData, category: cat, subCategory: "" })}
-              className={`text-[10px] tracking-[0.2em] uppercase font-bold pb-1 transition-all ${
-                formData.category === cat
-                  ? "border-b-2 border-atelier-ink opacity-100"
-                  : "opacity-40 hover:opacity-100"
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
+        {onCancel && <button type="button" onClick={onCancel} className="p-2 border border-atelier-ink/10" aria-label="Close"><X size={16}/></button>}
       </header>
 
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-        <div className="space-y-8">
-          <div>
-            <label className="text-[9px] tracking-[0.3em] uppercase opacity-50 block mb-2 font-bold">
-              Product Name
-            </label>
-            <input
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              placeholder="The Atelier Piece"
-              className="w-full bg-transparent border-b border-atelier-ink/20 py-2 focus:border-atelier-ink outline-none font-serif italic text-lg"
-              required
-            />
+      <div className="flex flex-wrap gap-3">
+        {CATEGORIES.map((category) => <button key={category} type="button" onClick={() => setField("category", category)} className={`px-3 py-2 text-[9px] uppercase tracking-widest border ${formData.category === category ? "bg-atelier-ink text-white border-atelier-ink" : "border-atelier-ink/15 opacity-60"}`}>{category}</button>)}
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-8">
+        <div className="space-y-6">
+          <div><label className={labelClass}>Product name *</label><input className={inputClass} value={formData.name} onChange={(e) => setField("name", e.target.value)} placeholder="Product name" /></div>
+          <div><label className={labelClass}>Product SKU</label><input className={inputClass} value={formData.sku || ""} onChange={(e) => setField("sku", e.target.value.toUpperCase())} placeholder="OTM-PRODUCT-001" /></div>
+          <div><label className={labelClass}>Subcategory</label><select className={inputClass} value={formData.subCategory || ""} onChange={(e) => setField("subCategory", e.target.value)}><option value="">Select subcategory</option>{(SUBCATEGORY_MAP[formData.category] || []).map((item) => <option key={item}>{item}</option>)}</select></div>
+          <div className="grid grid-cols-2 gap-5">
+            <div><label className={labelClass}>Price (NGN) *</label><input type="number" min="0" step="1" className={inputClass} value={formData.price} onChange={(e) => setField("price", e.target.value)} /></div>
+            <div><label className={labelClass}>{formData.variants.length ? "Total variant stock" : "Stock quantity"}</label><input type="number" min="0" step="1" disabled={formData.variants.length > 0} className={`${inputClass} disabled:opacity-40`} value={formData.variants.length ? formData.variants.reduce((sum, variant) => sum + Number(variant.stock || 0), 0) : formData.stock} onChange={(e) => setField("stock", e.target.value)} /></div>
           </div>
-
-          <div>
-            <label className="text-[9px] tracking-[0.3em] uppercase opacity-50 block mb-2 font-bold">
-              Sub Category
-            </label>
-            <select
-              name="subCategory"
-              value={formData.subCategory}
-              onChange={handleChange}
-              className="w-full bg-transparent border-b border-atelier-ink/20 py-2 outline-none font-sans text-sm"
-            >
-              <option value="">Select Subcategory...</option>
-              {SUBCATEGORY_MAP[formData.category]?.map((sub) => (
-                <option key={sub} value={sub}>
-                  {sub}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="grid grid-cols-2 gap-8">
-            <div>
-              <label className="text-[9px] tracking-[0.3em] uppercase opacity-50 block mb-2 font-bold">
-                {formData.isAuction ? "Starting Price (₦)" : "Price (₦)"}
-              </label>
-              <input
-                type="number"
-                name="price"
-                value={formData.price}
-                onChange={handleChange}
-                className="w-full bg-transparent border-b border-atelier-ink/20 py-2 focus:border-atelier-ink outline-none font-sans"
-                required
-              />
-            </div>
-            {!formData.isAuction && (
-              <div>
-                <label className="text-[9px] tracking-[0.3em] uppercase opacity-50 block mb-2 font-bold">
-                  Initial Stock
-                </label>
-                <input
-                  type="number"
-                  name="stock"
-                  value={formData.stock}
-                  onChange={handleChange}
-                  className="w-full bg-transparent border-b border-atelier-ink/20 py-2 focus:border-atelier-ink outline-none font-sans"
-                />
-              </div>
-            )}
-          </div>
-
-          <div>
-            <label className="text-[9px] tracking-[0.3em] uppercase opacity-50 block mb-2 font-bold">
-              Description
-            </label>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              className="w-full bg-transparent border border-atelier-ink/20 p-4 focus:border-atelier-ink outline-none h-32 text-sm leading-relaxed"
-              required
-            />
-          </div>
-
-          {/* INTERACTIVE MEDIA GALLERY */}
-          <div className="space-y-4">
-            <label className="text-[9px] tracking-[0.3em] uppercase opacity-50 block font-bold">
-              Gallery Media ({formData.images.length})
-            </label>
-
-            {formData.images.length > 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {formData.images.map((img, index) => (
-                  <div
-                    key={index}
-                    className="relative group border border-atelier-ink/10 bg-atelier-ink/5 p-1"
-                  >
-                    <img
-                      src={img}
-                      alt={`Preview ${index + 1}`}
-                      className="w-full h-24 object-cover"
-                    />
-
-                    {/* Cover Image Indicator */}
-                    {index === 0 && (
-                      <span className="absolute top-2 left-2 bg-atelier-ink text-white text-[8px] tracking-widest uppercase px-1.5 py-0.5 font-bold">
-                        Cover
-                      </span>
-                    )}
-
-                    {/* Action Overlay */}
-                    <div className="absolute inset-0 bg-atelier-ink/75 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-2">
-                      <div className="flex justify-end">
-                        <button
-                          type="button"
-                          onClick={() => removeImage(index)}
-                          className="text-white hover:text-red-400 text-xs font-bold px-1"
-                          title="Remove Image"
-                        >
-                          ✕
-                        </button>
-                      </div>
-
-                      <div className="flex justify-between items-center text-white">
-                        <button
-                          type="button"
-                          onClick={() => moveImage(index, -1)}
-                          disabled={index === 0}
-                          className="disabled:opacity-20 hover:text-atelier-tan text-xs font-bold px-1"
-                          title="Move Left"
-                        >
-                          ←
-                        </button>
-                        <span className="text-[9px] font-mono">{index + 1}</span>
-                        <button
-                          type="button"
-                          onClick={() => moveImage(index, 1)}
-                          disabled={index === formData.images.length - 1}
-                          className="disabled:opacity-20 hover:text-atelier-tan text-xs font-bold px-1"
-                          title="Move Right"
-                        >
-                          →
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <button
-              type="button"
-              onClick={handleUpload}
-              className="w-full p-4 border border-dashed border-atelier-ink/20 text-center hover:bg-atelier-ink/5 transition-colors text-[10px] tracking-widest uppercase font-bold opacity-70 hover:opacity-100"
-            >
-              + Upload {formData.images.length > 0 ? "More Media" : "Gallery Media"}
-            </button>
-          </div>
+          <div><label className={labelClass}>Description *</label><textarea className="w-full min-h-36 border border-atelier-ink/15 bg-transparent p-3 text-sm outline-none" value={formData.description} onChange={(e) => setField("description", e.target.value)} placeholder="Describe the product..." /></div>
         </div>
 
-        <div className="space-y-8">
-          <div className="p-6 border border-atelier-ink/10 bg-atelier-ink/5 space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-xs tracking-[0.2em] uppercase font-bold">
-                  Auction Mode
-                </h3>
-                <p className="text-[10px] opacity-60 font-serif italic">
-                  List this piece as a timed bidding event.
-                </p>
-              </div>
-              <input
-                type="checkbox"
-                name="isAuction"
-                id="isAuction"
-                checked={formData.isAuction}
-                onChange={handleChange}
-                className="w-5 h-5 accent-atelier-ink cursor-pointer"
-              />
-            </div>
-
-            {formData.isAuction && (
-              <div className="space-y-4 pt-4 border-t border-atelier-ink/10 animate-in fade-in duration-300">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-[8px] tracking-[0.2em] uppercase opacity-60 block mb-1 font-bold">
-                      Auction Start
-                    </label>
-                    <input
-                      type="datetime-local"
-                      name="startTime"
-                      value={formData.auctionDetails.startTime}
-                      onChange={(e) => handleChange(e, "auctionDetails")}
-                      className="w-full bg-transparent border-b border-atelier-ink/20 py-1 text-xs outline-none"
-                      required={formData.isAuction}
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[8px] tracking-[0.2em] uppercase opacity-60 block mb-1 font-bold">
-                      Auction End
-                    </label>
-                    <input
-                      type="datetime-local"
-                      name="endTime"
-                      value={formData.auctionDetails.endTime}
-                      onChange={(e) => handleChange(e, "auctionDetails")}
-                      className="w-full bg-transparent border-b border-atelier-ink/20 py-1 text-xs outline-none"
-                      required={formData.isAuction}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-[8px] tracking-[0.2em] uppercase opacity-60 block mb-1 font-bold">
-                      Min Increment (₦)
-                    </label>
-                    <input
-                      type="number"
-                      name="minBidIncrement"
-                      value={formData.auctionDetails.minBidIncrement}
-                      onChange={(e) => handleChange(e, "auctionDetails")}
-                      className="w-full bg-transparent border-b border-atelier-ink/20 py-1 text-xs outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[8px] tracking-[0.2em] uppercase opacity-60 block mb-1 font-bold">
-                      Reserve Price (₦)
-                    </label>
-                    <input
-                      type="number"
-                      name="reservePrice"
-                      value={formData.auctionDetails.reservePrice}
-                      onChange={(e) => handleChange(e, "auctionDetails")}
-                      className="w-full bg-transparent border-b border-atelier-ink/20 py-1 text-xs outline-none"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
+        <div className="space-y-6">
+          <div className="border border-atelier-ink/10 p-4 space-y-4">
+            <label className="flex items-center justify-between gap-4 cursor-pointer">
+              <span><span className="block text-xs uppercase tracking-widest font-bold">Auction mode</span><span className="block text-[10px] opacity-50 mt-1">List this piece as a timed bidding event.</span></span>
+              <input type="checkbox" checked={Boolean(formData.isAuction)} onChange={(e) => setField("isAuction", e.target.checked)} className="w-4 h-4 accent-atelier-ink" />
+            </label>
+            {formData.isAuction && <div className="grid grid-cols-2 gap-3 border-t border-atelier-ink/10 pt-3">
+              <label className="text-[9px] uppercase tracking-widest">Starting bid<input type="number" min="1" value={formData.auctionDetails.startingBid} onChange={(e) => setNested("auctionDetails", "startingBid", e.target.value)} className={inputClass}/></label>
+              <label className="text-[9px] uppercase tracking-widest">Minimum increment<input type="number" min="1" value={formData.auctionDetails.minBidIncrement} onChange={(e) => setNested("auctionDetails", "minBidIncrement", e.target.value)} className={inputClass}/></label>
+              <label className="text-[9px] uppercase tracking-widest">Auction starts<input type="datetime-local" value={formData.auctionDetails.startTime ? String(formData.auctionDetails.startTime).slice(0, 16) : ""} onChange={(e) => setNested("auctionDetails", "startTime", e.target.value)} className={inputClass}/></label>
+              <label className="text-[9px] uppercase tracking-widest">Auction ends<input type="datetime-local" value={formData.auctionDetails.endTime ? String(formData.auctionDetails.endTime).slice(0, 16) : ""} onChange={(e) => setNested("auctionDetails", "endTime", e.target.value)} className={inputClass}/></label>
+              <label className="text-[9px] uppercase tracking-widest col-span-2">Reserve price (optional)<input type="number" min="0" value={formData.auctionDetails.reservePrice} onChange={(e) => setNested("auctionDetails", "reservePrice", e.target.value)} className={inputClass}/></label>
+            </div>}
+          </div>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between"><label className={labelClass}>Product gallery * ({formData.images.length})</label><button type="button" onClick={handleUpload} className="flex items-center gap-2 text-[9px] uppercase tracking-widest font-bold"><Upload size={13}/> Upload</button></div>
+            {formData.images.length ? <div className="grid grid-cols-3 gap-2">{formData.images.map((image, index) => <div key={`${image}-${index}`} className="relative aspect-square border border-atelier-ink/10"><img src={image} alt={`Product ${index + 1}`} className="w-full h-full object-cover"/><button type="button" onClick={() => setField("images", formData.images.filter((_, i) => i !== index))} className="absolute top-1 right-1 bg-white text-black p-1"><X size={12}/></button>{index === 0 && <span className="absolute bottom-1 left-1 bg-black text-white px-1 text-[8px] uppercase">Cover</span>}</div>)}</div> : <div className="border border-dashed border-atelier-ink/20 p-8 text-center text-xs opacity-50">No product images uploaded.</div>}
           </div>
 
-          {formData.category === "Shoe" && (
-            <div className="space-y-6">
-              <h3 className="text-[11px] tracking-[0.3em] uppercase font-bold border-b border-atelier-ink/10 pb-2">
-                Shoe Specifications
-              </h3>
-              {[
-                { label: "Styles", key: "style", options: ATELIER_MASTER_MENU.styles },
-                { label: "Sizes", key: "sizes", options: ATELIER_MASTER_MENU.sizes },
-                { label: "Colors", key: "color", options: ATELIER_MASTER_MENU.colors },
-                { label: "Materials", key: "material", options: ATELIER_MASTER_MENU.materials },
-              ].map((field) => (
-                <div key={field.key} className="space-y-2">
-                  <label className="text-[9px] tracking-[0.2em] uppercase opacity-50 font-bold block">
-                    {field.label}
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {field.options.map((opt) => {
-                      const isActive = formData.shoeDetails[field.key]?.includes(opt);
-                      return (
-                        <button
-                          key={opt}
-                          type="button"
-                          onClick={() => toggleOption("shoeDetails", field.key, opt)}
-                          className={`px-3 py-1 text-[10px] border transition-all ${
-                            isActive
-                              ? "bg-atelier-ink text-white border-atelier-ink"
-                              : "border-atelier-ink/10 opacity-60"
-                          }`}
-                        >
-                          {opt}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+          <div className="border border-atelier-ink/10 p-4 space-y-4">
+            <div className="flex justify-between items-center"><div><h3 className="text-xs uppercase tracking-widest font-bold">Variants & stock</h3><p className="text-[10px] opacity-50 mt-1">Use variants when size or colour stock differs.</p></div><button type="button" onClick={addVariant} className="flex items-center gap-1 text-[9px] uppercase tracking-widest font-bold"><Plus size={14}/> Add</button></div>
+            {formData.variants.length === 0 && <p className="text-xs opacity-50">No variants. Product-level stock will be used.</p>}
+            {formData.variants.map((variant, index) => <div key={index} className="grid grid-cols-2 md:grid-cols-4 gap-2 border-t border-atelier-ink/10 pt-3">
+              <input aria-label="Variant SKU" placeholder="SKU" className={`${inputClass} text-xs`} value={variant.sku} onChange={(e) => updateVariant(index, "sku", e.target.value.toUpperCase())}/>
+              <input aria-label="Variant size" placeholder="Size" className={`${inputClass} text-xs`} value={variant.size} onChange={(e) => updateVariant(index, "size", e.target.value)}/>
+              <input aria-label="Variant colour" placeholder="Colour" className={`${inputClass} text-xs`} value={variant.color} onChange={(e) => updateVariant(index, "color", e.target.value)}/>
+              <div className="flex gap-1"><input aria-label="Variant stock" type="number" min="0" className={`${inputClass} text-xs`} value={variant.stock} onChange={(e) => updateVariant(index, "stock", e.target.value)}/><input aria-label="Variant price override" type="number" min="0" placeholder="Price override" className={`${inputClass} text-xs`} value={variant.price ?? ""} onChange={(e) => updateVariant(index, "price", e.target.value)}/><button type="button" onClick={() => removeVariant(index)} className="text-red-700 px-1" aria-label="Remove variant"><Trash2 size={14}/></button></div>
+            </div>)}
+          </div>
 
-          {formData.category === "Magazine" && (
-            <div className="space-y-4">
-              <h3 className="text-[11px] tracking-[0.3em] uppercase font-bold border-b border-atelier-ink/10 pb-2">
-                Editorial Specifications
-              </h3>
-              <div className="grid grid-cols-2 gap-4">
-                <input
-                  type="number"
-                  placeholder="Issue Number"
-                  name="issueNumber"
-                  value={formData.magazineDetails.issueNumber}
-                  onChange={(e) => handleChange(e, "magazineDetails")}
-                  className="bg-transparent border-b border-atelier-ink/20 py-2 text-xs outline-none"
-                />
-                <input
-                  type="number"
-                  placeholder="Page Count"
-                  name="pages"
-                  value={formData.magazineDetails.pages}
-                  onChange={(e) => handleChange(e, "magazineDetails")}
-                  className="bg-transparent border-b border-atelier-ink/20 py-2 text-xs outline-none"
-                />
-              </div>
-            </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-atelier-ink text-white py-4 text-[10px] tracking-widest uppercase font-bold hover:bg-atelier-tan transition-all disabled:opacity-50 mt-8"
-          >
-            {isLoading ? "Publishing Piece..." : "Confirm & Publish Piece"}
-          </button>
+          {formData.category === "Shoe" && <div className="border border-atelier-ink/10 p-4 space-y-3"><h3 className="text-xs uppercase tracking-widest font-bold">Shoe details</h3><input className={inputClass} placeholder="Styles (comma separated)" value={(formData.shoeDetails.style || []).join(", ")} onChange={(e) => setNested("shoeDetails", "style", e.target.value.split(",").map((v) => v.trim()).filter(Boolean))}/><input className={inputClass} placeholder="Materials (comma separated)" value={(formData.shoeDetails.material || []).join(", ")} onChange={(e) => setNested("shoeDetails", "material", e.target.value.split(",").map((v) => v.trim()).filter(Boolean))}/></div>}
+          {formData.category === "Magazine" && <div className="border border-atelier-ink/10 p-4 space-y-3"><h3 className="text-xs uppercase tracking-widest font-bold">Magazine details</h3><div className="grid grid-cols-2 gap-3"><input type="number" className={inputClass} placeholder="Issue number" value={formData.magazineDetails.issueNumber} onChange={(e) => setNested("magazineDetails", "issueNumber", e.target.value)}/><input type="number" className={inputClass} placeholder="Pages" value={formData.magazineDetails.pages} onChange={(e) => setNested("magazineDetails", "pages", e.target.value)}/></div><label className="flex items-center gap-2 text-xs"><input type="checkbox" checked={Boolean(formData.magazineDetails.isDigital)} onChange={(e) => setNested("magazineDetails", "isDigital", e.target.checked)}/> Digital magazine</label><input className={inputClass} placeholder="Digital file URL (if applicable)" value={formData.magazineDetails.fileUrl || ""} onChange={(e) => setNested("magazineDetails", "fileUrl", e.target.value)}/></div>}
         </div>
-      </form>
+      </div>
+
+      {validationChecked && validationErrors.length > 0 && <div className="border border-red-300 bg-red-50 p-4 text-red-800"><div className="flex items-center gap-2 font-bold text-xs uppercase tracking-widest mb-2"><AlertCircle size={15}/> Product needs attention</div><ul className="list-disc pl-5 text-xs space-y-1">{validationErrors.map((error, index) => <li key={index}>{error}</li>)}</ul></div>}
+      {validationChecked && validationErrors.length === 0 && <div className="flex items-center gap-2 text-green-800 text-xs"><CheckCircle2 size={15}/> Product passed publication validation.</div>}
+
+      <footer className="flex flex-col sm:flex-row gap-3 border-t border-atelier-ink/10 pt-5">
+        <button type="button" disabled={isLoading} onClick={() => save("Draft")} className="flex-1 border border-atelier-ink/20 py-4 text-[9px] uppercase tracking-widest font-bold disabled:opacity-50">{isLoading ? "Saving..." : "Save draft"}</button>
+        <button type="button" disabled={isLoading} onClick={() => save("Published")} className="flex-1 bg-atelier-ink text-white py-4 text-[9px] uppercase tracking-widest font-bold disabled:opacity-50">{isLoading ? "Saving..." : product?.publicationStatus === "Published" ? "Save & publish" : "Validate & publish"}</button>
+      </footer>
     </section>
   );
 };

@@ -11,7 +11,13 @@ import {
   Link,
 } from "@react-email/components";
 
-export const OrderConfirmedEmail = ({ orderId, totalPrice, items }) => (
+export const OrderConfirmedEmail = ({ orderId, totalPrice, currency = "NGN", manualReview = false, items, shippingPrice = 0, shippingZone }) => {
+  const formatter = new Intl.NumberFormat("en", {
+    style: "currency",
+    currency,
+    maximumFractionDigits: currency === "NGN" ? 0 : 2,
+  });
+  return (
   <Html>
     <Body style={mainStyle}>
       <Container style={containerStyle}>
@@ -26,33 +32,37 @@ export const OrderConfirmedEmail = ({ orderId, totalPrice, items }) => (
 
         <Hr style={hrStyle} />
 
-        <Heading style={h1Style}>Commission Authenticated.</Heading>
+        <Heading style={h1Style}>{manualReview ? "Payment Received — Order Under Review." : "Commission Authenticated."}</Heading>
         <Text style={refStyle}>REFERENCE: {orderId}</Text>
         <Section style={summarySection}>
           {items.map((item) => (
-            <Text key={item.id} style={itemStyle}>
-              {item.name} (QTY: {item.qty}) — ${item.price}
+            <Text key={item._id?.toString?.() || item.product?.toString?.() || item.name} style={itemStyle}>
+              {item.name} (QTY: {item.qty}) — {formatter.format(item.price)}
             </Text>
           ))}
         </Section>
         <Hr style={hrStyle} />
-        <Text style={totalStyle}>Total Value: ${totalPrice}</Text>
+        {shippingZone?.name ? <Text style={textStyle}>Delivery zone: {shippingZone.name}</Text> : null}
+        <Text style={textStyle}>Delivery: {formatter.format(shippingPrice)}</Text>
+        <Text style={totalStyle}>Total Value: {formatter.format(totalPrice)}</Text>
         <Text style={textStyle}>
-          Your specifications have been logged. We will notify you as the
-          commission progresses.
+          {manualReview
+            ? "Your payment was received successfully. We are reviewing stock availability and will contact you shortly with the next steps."
+            : "Your specifications have been logged. We will notify you as the commission progresses."}
         </Text>
         <Section style={btnSection}>
           <Link
-            href={`${process.env.FRONTEND_URL}/profile`}
+            href={`${process.env.FRONTEND_URL}/store`}
             style={buttonStyle}
           >
-            View Order
+            Continue Shopping
           </Link>
         </Section>
       </Container>
     </Body>
   </Html>
-);
+  );
+};
 
 const mainStyle = { backgroundColor: "#f9f7f2", padding: "40px 0" };
 const containerStyle = {

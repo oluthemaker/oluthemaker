@@ -16,6 +16,8 @@ const FeaturedBlogCard = ({ post }) => {
                     transition={{ duration: 1.5, ease: [0.33, 1, 0.68, 1] }}
                     src={post.headerImage}
                     alt={post.title}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute inset-0 bg-atelier-ink/5 group-hover:bg-transparent transition-colors duration-500" />

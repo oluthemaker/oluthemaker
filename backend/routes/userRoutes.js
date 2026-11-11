@@ -1,4 +1,5 @@
 import express from "express";
+import crypto from "crypto";
 const router = express.Router();
 import {
   authUser,
@@ -32,17 +33,33 @@ router.route("/wishlist").post(protect, manageWishlist);
 router.route("/").get(protect, admin, getUsers);
 
 router.post("/orders/:id/remind", protect, admin, async (req, res) => {
-  const order = await Order.findById(req.params.id).populate("user");
-  const paymentLink = `${process.env.FRONTEND_URL}/payment?orderId=${order._id}`;
+  try {
+    const order = await Order.findById(req.params.id).populate("user", "name email");
+    if (!order) return res.status(404).json({ message: "Order not found." });
+    if (order.isPaid) return res.status(409).json({ message: "This order has already been paid." });
 
-  await sendEmail("PAYMENT_REMINDER", order.user.email, {
-    name: order.user.name,
-    orderId: order._id.toString(),
-    totalPrice: order.totalPrice,
-    paymentLink,
-  });
+    const recipientEmail = order.customer?.email || order.user?.email;
+    if (!recipientEmail) return res.status(400).json({ message: "This order has no customer email address." });
 
-  res.json({ message: "Reminder sent to client." });
+    // Rotate a fresh one-time guest access token for the emailed payment link.
+    const checkoutToken = crypto.randomBytes(32).toString("hex");
+    order.guestAccessTokenHash = crypto.createHash("sha256").update(checkoutToken).digest("hex");
+    await order.save();
+
+    const paymentLink = `${process.env.FRONTEND_URL}/payment?orderId=${order._id}&checkoutToken=${checkoutToken}`;
+    await sendEmail("PAYMENT_REMINDER", recipientEmail, {
+      name: order.customer?.name || order.user?.name || "Client",
+      orderId: order._id.toString(),
+      totalPrice: order.totalPrice,
+      currency: order.currency || (order.paymentReference ? "NGN" : "USD"),
+      paymentLink,
+    });
+
+    return res.json({ message: "Reminder sent to client." });
+  } catch (error) {
+    console.error("Payment reminder failed:", error.message);
+    return res.status(500).json({ message: "Unable to send payment reminder." });
+  }
 });
 
 export default router;

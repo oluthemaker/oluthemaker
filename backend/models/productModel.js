@@ -1,95 +1,104 @@
 import mongoose from "mongoose";
 
+const variantSchema = new mongoose.Schema(
+  {
+    sku: { type: String, trim: true, uppercase: true },
+    size: { type: String, trim: true, default: "" },
+    color: { type: String, trim: true, default: "" },
+    price: { type: Number, min: 0 },
+    stock: { type: Number, default: 0, min: 0, validate: Number.isInteger },
+    isActive: { type: Boolean, default: true },
+  },
+  { _id: true },
+);
+
 const productSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
-    slug: { type: String, unique: true, required: true }, // For clean SEO URLs
+    slug: { type: String, unique: true, required: true, trim: true },
     description: { type: String, required: true },
-    price: { type: Number, required: true },
-    images: [{ type: String }], // Array of URLs (Cloudinary/S3)
+    price: { type: Number, required: true, min: 0 },
+    sku: { type: String, trim: true, uppercase: true, unique: true, sparse: true },
+    images: [{ type: String }],
     category: {
       type: String,
       enum: ["Shoe", "Magazine", "Leather Goods", "Merchandise", "Auction"],
       required: true,
     },
-    // NEW: Subcategory field
-        subCategory: {
-          type: String,
-          trim: true,
-          default: null,
-        },
-
-    // NEW: Status for "Limited Edition" or "Archive" labels
+    subCategory: { type: String, trim: true, default: null },
     status: {
-          type: String,
-          enum: ["Available", "Pre-Order", "Sold Out", "Archived", "Auction"],
-          default: "Available",
+      type: String,
+      enum: ["Available", "Pre-Order", "Sold Out", "Archived", "Auction"],
+      default: "Available",
     },
-    // NEW: Auction Specifications
-        isAuction: { type: Boolean, default: false },
-        auctionDetails: {
-          startingBid: { type: Number },
-          currentBid: { type: Number },
-          minBidIncrement: { type: Number, default: 5000 },
-          startTime: { type: Date },
-          endTime: { type: Date },
-          reservePrice: { type: Number },
-          winningBidder: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-        },
-
-    // Shoe Specifics
+    publicationStatus: {
+      type: String,
+      enum: ["Draft", "Published", "Archived"],
+      default: "Published",
+      index: true,
+    },
+    archivedAt: { type: Date, default: null },
+    isAuction: { type: Boolean, default: false },
+    auctionDetails: {
+      startingBid: Number,
+      currentBid: Number,
+      minBidIncrement: { type: Number, default: 5000 },
+      startTime: Date,
+      endTime: Date,
+      reservePrice: Number,
+      winningBidder: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    },
     shoeDetails: {
-      style: [{ type: String }], // Changed to Array
-      material: [{ type: String }], // Changed to Array
-      color: [{ type: String }], // Changed to Array
+      style: [{ type: String }],
+      material: [{ type: String }],
+      color: [{ type: String }],
       sizes: [Number],
     },
-
-    // Magazine Specifics
     magazineDetails: {
-      issueNumber: { type: Number },
-      pages: { type: Number }, // New
-      month: { type: String }, // New (e.g., "September")
-      year: { type: Number }, // New (e.g., 2026)
+      issueNumber: Number,
+      pages: Number,
+      month: String,
+      year: Number,
       isDigital: { type: Boolean, default: false },
-      fileUrl: { type: String },
-      coverImage: { type: String },
-      excerpt: { type: String },
-
-      // Linked to your Blog model
-      articles: [
-        {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Blog",
-        },
-      ],
+      fileUrl: String,
+      coverImage: String,
+      excerpt: String,
+      articles: [{ type: mongoose.Schema.Types.ObjectId, ref: "Blog" }],
     },
-
-    stock: { type: Number, default: 0 },
+    stock: {
+      type: Number,
+      default: 0,
+      min: 0,
+      validate: { validator: Number.isInteger, message: "Stock quantity must be a whole number." },
+    },
+    variants: { type: [variantSchema], default: [] },
     admin: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   },
-  {
-    timestamps: true,
-    // This allows the frontend to easily check if it's a magazine or shoe
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true },
-  },
+  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } },
 );
 
-// Virtual to check availability
 productSchema.virtual("isAvailable").get(function () {
+  if (this.publicationStatus === "Archived" || this.status === "Archived") return false;
   if (this.isAuction) {
     const now = new Date();
     return now >= this.auctionDetails?.startTime && now <= this.auctionDetails?.endTime;
   }
-  return this.stock > 0;
+  return this.stock > 0 || this.status === "Pre-Order" ||
+    (this.category === "Magazine" && this.magazineDetails?.isDigital === true);
 });
 
-// Virtual for remaining auction time in milliseconds
 productSchema.virtual("auctionTimeRemaining").get(function () {
   if (!this.isAuction || !this.auctionDetails?.endTime) return 0;
   const remaining = new Date(this.auctionDetails.endTime) - new Date();
   return remaining > 0 ? remaining : 0;
+});
+
+productSchema.index({ "variants.sku": 1 }, { unique: true, partialFilterExpression: { "variants.sku": { $type: "string" } } });
+
+productSchema.pre("validate", function () {
+  if (Array.isArray(this.variants) && this.variants.length) {
+    this.stock = this.variants.reduce((total, variant) => total + (variant.isActive ? Number(variant.stock || 0) : 0), 0);
+  }
 });
 
 const Product = mongoose.model("Product", productSchema);

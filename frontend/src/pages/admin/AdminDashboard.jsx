@@ -1,17 +1,21 @@
 import React, { useState } from "react";
-import AddProductForm from "../../components/admin/AdminProductForm";
+import AdminInventoryManager from "../../components/admin/AdminInventoryManager";
 import {
   Package,
   Users,
   BarChart3,
   ClipboardList,
   ConciergeBell,
+  Truck,
 } from "lucide-react";
 import AdminOrderList from "../../components/admin/AdminOrderList";
 import AdminUserList from "../../components/admin/AdminUserList";
 import AdminTicketList from "../../components/admin/AdminTicketList";
 import { Newspaper } from "lucide-react";
 import AdminBlogManager from "../../components/admin/AdminBlogManager";
+import AdminRevenueAnalytics from "../../components/admin/AdminRevenueAnalytics";
+import AdminShippingManager from "../../components/admin/AdminShippingManager";
+import AdminCustomerAnalytics from "../../components/admin/AdminCustomerAnalytics";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("products");
@@ -40,6 +44,8 @@ const AdminDashboard = () => {
               label: "Revenue",
               icon: <BarChart3 size={16} />,
             },
+            { id: "shipping", label: "Shipping", icon: <Truck size={16} /> },
+            { id: "customers", label: "Customers", icon: <Users size={16} /> },
             {
               id: "tickets",
               label: "Concierge",
@@ -80,16 +86,12 @@ const AdminDashboard = () => {
 
         {/* 2. INVENTORY (PRODUCTS) TAB */}
         {activeTab === "products" && (
-          <div className="max-w-4xl animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <header className="mb-12">
-              <h2 className="text-4xl font-serif italic mb-2 text-atelier-ink">
-                Inventory Management
-              </h2>
-              <p className="text-[10px] tracking-widest uppercase opacity-40">
-                Add or edit bespoke commissions
-              </p>
+          <div className="max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <header className="mb-10">
+              <h2 className="text-4xl font-serif italic mb-2 text-atelier-ink">Inventory Management</h2>
+              <p className="text-[10px] tracking-widest uppercase opacity-40">Catalogue, publication and stock control</p>
             </header>
-            <AddProductForm />
+            <AdminInventoryManager />
           </div>
         )}
 
@@ -119,13 +121,19 @@ const AdminDashboard = () => {
                 Financial performance overview
               </p>
             </header>
-            <div className="h-64 border border-dashed border-atelier-ink/10 flex items-center justify-center">
-              <p className="font-serif italic opacity-30">
-                Financial modeling in progress...
-              </p>
-            </div>
+            <AdminRevenueAnalytics />
           </div>
         )}
+        {activeTab === "customers" && (
+          <div className="max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <header className="mb-12">
+              <h2 className="mb-2 font-serif text-4xl italic text-atelier-ink">Customer Analytics</h2>
+              <p className="text-[10px] uppercase tracking-widest opacity-40">Understand acquisition, repeat purchases and customer locations</p>
+            </header>
+            <AdminCustomerAnalytics />
+          </div>
+        )}
+
         {activeTab === "journal" && (
           <div className="max-w-4xl animate-in fade-in slide-in-from-bottom-4 duration-500">
             <header className="mb-12">
@@ -137,6 +145,16 @@ const AdminDashboard = () => {
               </p>
             </header>
             <AdminBlogManager />
+          </div>
+        )}
+
+        {activeTab === "shipping" && (
+          <div className="max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <header className="mb-10">
+              <h2 className="text-4xl font-serif italic mb-2 text-atelier-ink">Shipping & Delivery</h2>
+              <p className="text-[10px] tracking-widest uppercase opacity-40">Configure delivery regions, rates and availability</p>
+            </header>
+            <AdminShippingManager />
           </div>
         )}
 

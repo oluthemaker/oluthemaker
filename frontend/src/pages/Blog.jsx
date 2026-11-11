@@ -71,7 +71,7 @@ export default function Blog() {
 
   useSEO({
     title: "Blog",
-    description: "Read our latest blog posts on ",
+    description: "Read journal stories, atelier notes, craftsmanship insights and perspectives from Olú The Maker.",
   });
 
   if (loading && blogs.length === 0)

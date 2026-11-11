@@ -16,7 +16,10 @@ export const PaymentReminderEmail = ({
   orderId,
   paymentLink,
   totalPrice,
-}) => (
+  currency = "NGN",
+}) => {
+  const formattedTotal = new Intl.NumberFormat("en", { style: "currency", currency, maximumFractionDigits: currency === "NGN" ? 0 : 2 }).format(totalPrice);
+  return (
   <Html>
     <Preview>
       Action Required: Complete your commission for order {orderId}
@@ -44,7 +47,7 @@ export const PaymentReminderEmail = ({
         </Text>
 
         <Section style={detailsBox}>
-          <Text style={detailsText}>TOTAL VALUE: ${totalPrice}</Text>
+          <Text style={detailsText}>TOTAL VALUE: {formattedTotal}</Text>
           <Text style={detailsText}>STATUS: AWAITING FUNDS</Text>
         </Section>
 
@@ -71,7 +74,8 @@ export const PaymentReminderEmail = ({
       </Container>
     </Body>
   </Html>
-);
+  );
+};
 
 // --- ATELIER STYLES ---
 

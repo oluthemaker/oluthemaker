@@ -61,10 +61,11 @@ const Store = () => {
               Store
             </h1>
           </div>
-          <div className="text-right">
+          <div className="text-right flex flex-col items-start md:items-end gap-3">
             <span className="text-[9px] tracking-[0.3em] uppercase opacity-40 font-mono block">
               Curated Selection • 2026 Edition
             </span>
+            <Link to="/shop/products" className="border border-atelier-ink/30 px-5 py-3 text-[9px] uppercase tracking-[0.25em] hover:bg-atelier-ink hover:text-white transition-colors">Browse All Products ↗</Link>
           </div>
         </header>
 

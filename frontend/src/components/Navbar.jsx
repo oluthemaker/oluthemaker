@@ -1,14 +1,17 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { ShoppingBag, User, Menu } from "lucide-react";
+import { ShoppingBag, User, Menu, Heart, Search } from "lucide-react";
 import CartDrawer from "./CartDrawer";
 import useUserStore from "../store/useUserStore";
 import useCartStore from "../store/useCartStore";
+import useWishlistStore from "../store/useWishlistStore";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { isAuthenticated, user } = useUserStore();
   const { cartItems, setIsCartOpen } = useCartStore();
+  const wishlistItems = useWishlistStore((state) => state.items);
+  const wishlistItemCount = wishlistItems.length;
   const cartItemCount = cartItems.reduce((total, item) => total + item.qty, 0);
 
   const MobileMenu = ({ isOpen, onClose, isAuthenticated }) => {
@@ -55,15 +58,7 @@ const Navbar = () => {
               Journal
             </Link>
 
-            <div className="pt-12 border-t border-atelier-ink/10 flex flex-col space-y-6">
-              <Link
-                to={isAuthenticated ? "/profile" : "/auth"}
-                onClick={onClose}
-                className="text-[11px] tracking-[0.4em] uppercase font-bold text-atelier-tan"
-              >
-                {isAuthenticated ? "My Account" : "Sign In / Register"}
-              </Link>
-            </div>
+
           </nav>
         </div>
       </div>
@@ -115,14 +110,17 @@ const Navbar = () => {
 
           {/* Right Icons — Stays visible; Burger shows on Mobile & Medium */}
           <div className="flex items-center space-x-1 md:space-x-6 z-20 ml-auto">
-            <Link
-              to={isAuthenticated ? "/profile" : "/auth"}
-              className="hover:text-atelier-tan transition-colors opacity-80 flex items-center gap-2 group"
-            >
-              <User size={18} strokeWidth={1.5} />
-              {isAuthenticated && (
-                <span className="text-[9px] uppercase tracking-[0.2em] font-bold hidden lg:block group-hover:text-atelier-tan transition-colors">
-                  {user?.user?.name?.split(" ")[0] || "Client"}
+            <Link to="/shop/products" aria-label="Search products" title="Search products" className="hover:text-atelier-tan transition-colors opacity-80">
+              <Search size={18} strokeWidth={1.5} />
+            </Link>
+
+
+
+            <Link to="/wishlist" aria-label={`Wishlist${wishlistItemCount ? `, ${wishlistItemCount} saved` : ""}`} title="Wishlist" className="relative hover:text-atelier-tan transition-colors opacity-80">
+              <Heart size={18} strokeWidth={1.5} />
+              {wishlistItemCount > 0 && (
+                <span className="absolute -top-1 -right-2 bg-atelier-ink text-white text-[8px] min-w-4 h-4 px-1 rounded-full flex items-center justify-center font-sans font-bold">
+                  {wishlistItemCount > 99 ? "99+" : wishlistItemCount}
                 </span>
               )}
             </Link>

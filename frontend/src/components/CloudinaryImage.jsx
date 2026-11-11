@@ -25,6 +25,7 @@ const CloudinaryImage = ({ src, alt, layout, caption }) => {
           alt={alt || "Editorial imagery"}
           className={`w-full h-auto object-cover transition-opacity duration-700 ${isFullBleed ? "aspect-[21/9]" : "aspect-auto"}`}
           loading="lazy"
+          decoding="async"
         />
       </div>
 

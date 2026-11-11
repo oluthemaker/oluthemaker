@@ -10,9 +10,12 @@ const useProductStore = create((set, get) => ({
   leatherGoods: [],
   loading: false,
   error: null,
+  lastFetchedAt: 0,
 
-  fetchProducts: async () => {
-    set({ loading: true });
+  fetchProducts: async ({ force = false } = {}) => {
+    if (get().loading) return get().products;
+    if (!force && get().products.length > 0) return get().products;
+    set({ loading: true, error: null });
     try {
       const response = await API.get("/products");
       const allProducts = response.data;
@@ -26,6 +29,7 @@ const useProductStore = create((set, get) => ({
         merchandise: allProducts.filter((p) => p.category === "Merchandise"),
         leatherGoods: allProducts.filter((p) => p.category === "Leather Goods"),
         loading: false,
+        lastFetchedAt: Date.now(),
       });
     } catch (err) {
       set({ error: err.message, loading: false });

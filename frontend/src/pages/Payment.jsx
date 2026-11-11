@@ -1,222 +1,150 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import useCartStore from "../store/useCartStore";
 import useOrderStore from "../store/useOrderStore";
-import useUserStore from "../store/useUserStore";
 import { atelierToast } from "../utils/Toaster";
 import FlutterwaveButton from "../components/FlutterwaveButton";
 
+const money = (amount, currency) => new Intl.NumberFormat(currency === "NGN" ? "en-NG" : "en-US", {
+  style: "currency", currency, maximumFractionDigits: currency === "NGN" ? 0 : 2,
+}).format(Number(amount || 0));
+
 const Payment = () => {
   const navigate = useNavigate();
-  const { cartItems, clearCart } = useCartStore();
-  const { shippingAddress, createOrder } = useOrderStore();
-  const { user } = useUserStore(); // Assumes user state holds { name, email, etc. }
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [createdOrderId, setCreatedOrderId] = useState(null);
+  const { cartItems } = useCartStore();
+  const { customer, shippingAddress, currency, abandonedCartId, createOrder, loading, error } = useOrderStore();
+  const [createdOrder, setCreatedOrder] = useState(null);
+  const [isCreating, setIsCreating] = useState(false);
 
-  // 1. Create a state to hold the dynamic tx_ref
-  const [transactionRef, setTransactionRef] = useState("");
-
-  // Financial Math (Ideally, calculate tax/shipping based on your business logic)
-  const itemsPrice = cartItems.reduce(
-    (acc, item) => acc + item.price * item.qty,
-    0,
-  );
-  const shippingPrice = itemsPrice > 500 ? 0 : 50; // Example: Free shipping over $500
-  const taxPrice = itemsPrice * 0.05; // Example 5% tax
-  const totalPrice = itemsPrice + shippingPrice + taxPrice;
-
-  // Flutterwave Config Generator
-  // const handleFlutterwavePayment = useFlutterwave({
-  //   public_key: import.meta.env.VITE_FLW_PUBLIC_KEY, // Add this to your .env
-  //   tx_ref: transactionRef, // We will inject the MongoDB Order ID here dynamically
-  //   amount: totalPrice,
-  //   currency: "USD", // Or "NGN" depending on your store setup
-  //   payment_options: "card,mobilemoney,ussd",
-  //   customer: {
-  //     email: user?.user?.email || "",
-  //     name: user?.user?.name || "Client",
-  //   },
-  //   customizations: {
-  //     title: "Olu THE MAKER",
-  //     description: "Payment for Commission",
-  //     logo: "https://your-logo-url.com/logo.png", // Optional
-  //   },
-  // });
-
-  // const handlePlaceOrder = async () => {
-  //   setIsProcessing(true);
-
-  //   // 1. Create the Order in MongoDB FIRST (Status: isPaid = false)
-  //   const orderData = {
-  //     orderItems: cartItems,
-  //     shippingAddress,
-  //     paymentMethod: "Flutterwave",
-  //     itemsPrice,
-  //     taxPrice,
-  //     shippingPrice,
-  //     totalPrice,
-  //   };
-
-  //   const createdOrder = await createOrder(orderData);
-
-  //   if (createdOrder && createdOrder._id) {
-  //     // 2. Launch Flutterwave with the MongoDB Order ID as the tx_ref
-
-  //     const orderId = String(createdOrder._id);
-  //     setTransactionRef(orderId);
-  //     handleFlutterwavePayment({
-  //       tx_ref: orderId, // Force the specific ID here
-  //       callback: (response) => {
-  //         if (response.status === "successful") {
-  //           clearCart();
-  //           closePaymentModal();
-  //           navigate(
-  //             `/order/${orderId}/success?transaction_id=${response.transaction_id}`,
-  //           );
-  //         } else {
-  //           closePaymentModal();
-  //           navigate("/payment-failed");
-  //         }
-  //       },
-  //       onClose: () => {
-  //         setIsProcessing(false);
-  //       },
-  //     });
-  //   } else {
-  //     setIsProcessing(false);
-  //     atelierToast("Failed to initialize order. Please try again.");
-  //   }
-  // };
+  const hasCheckoutDetails = Boolean(customer?.name && customer?.email && customer?.phoneNumber && shippingAddress?.addressLine1 && shippingAddress?.city && shippingAddress?.country);
+  const itemCount = useMemo(() => cartItems.reduce((sum, item) => sum + Number(item.qty || 0), 0), [cartItems]);
 
   const handleCreateOrder = async () => {
-    setIsProcessing(true);
-    const orderData = {
-      orderItems: cartItems,
+    if (!hasCheckoutDetails) {
+      atelierToast("Please complete your contact and delivery details first.", "error");
+      navigate("/checkout");
+      return;
+    }
+    if (!cartItems.length) return;
+    setIsCreating(true);
+    const payload = {
+      orderItems: cartItems.map((item) => ({
+        product: item.productId || item.product || item._id || item.id,
+        qty: item.qty,
+        variantSku: item.variantSku || undefined,
+        size: item.size || undefined,
+        color: item.color || undefined,
+        width: item.width || undefined,
+        last: item.last || undefined,
+        material: item.material || undefined,
+        sole: item.sole || undefined,
+        format: item.format || undefined,
+      })),
+      customer,
       shippingAddress,
+      currency,
+      abandonedCartId,
       paymentMethod: "Flutterwave",
-      itemsPrice,
-      taxPrice,
-      shippingPrice,
-      totalPrice,
     };
 
-    try {
-      const order = await createOrder(orderData);
-      if (order?._id) {
-        setCreatedOrderId(order._id); // This triggers the button to appear
-      }
-    } catch (err) {
-      atelierToast("Failed to create order");
-    } finally {
-      setIsProcessing(false);
+    const order = await createOrder(payload);
+    setIsCreating(false);
+    if (!order?._id || !order?.payment?.tx_ref || !order?.checkoutToken) {
+      atelierToast(useOrderStore.getState().error || "We could not prepare your order. Please try again.", "error");
+      return;
     }
+
+    // Keep the guest credential out of the URL and persistent local storage.
+    sessionStorage.setItem(`olu-order-token:${order._id}`, order.checkoutToken);
+    setCreatedOrder(order);
   };
 
-  if (cartItems.length === 0) return null; // Edge case safeguard
+  const handlePaymentSuccess = (response) => {
+    const transactionId = response.transaction_id || response.id;
+    navigate(`/order/${createdOrder._id}/success?transaction_id=${encodeURIComponent(transactionId)}`);
+  };
+
+  if (!cartItems.length && !createdOrder) {
+    return (
+      <main className="min-h-screen bg-atelier-paper pt-40 px-6 text-center">
+        <p className="font-serif italic text-2xl mb-6">Your selection is empty.</p>
+        <Link to="/store" className="text-xs uppercase tracking-widest underline">Return to the store</Link>
+      </main>
+    );
+  }
+
+  const orderItems = createdOrder?.orderItems || cartItems;
+  const orderCurrency = createdOrder?.currency || currency || "NGN";
 
   return (
     <main className="bg-atelier-paper text-atelier-ink min-h-screen pt-32 pb-32">
-      <div className="max-w-4xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-16">
-        {/* ORDER SUMMARY (Left Side) */}
-        <div>
-          <h1 className="text-4xl font-serif italic mb-8">Review Commission</h1>
-          <div className="space-y-6 mb-12">
-            {cartItems.map((item, index) => (
-              <div
-                key={index}
-                className="flex gap-4 border-b border-atelier-ink/10 pb-6"
-              >
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="w-20 h-24 object-cover bg-atelier-ink/5"
-                />
+      <div className="max-w-5xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16">
+        <section>
+          <h1 className="text-4xl font-serif italic mb-8">Review Your Order</h1>
+          <div className="space-y-6 mb-10">
+            {orderItems.map((item, index) => (
+              <div key={item._id || item.cartItemId || index} className="flex gap-4 border-b border-atelier-ink/10 pb-6">
+                <img src={item.image} alt={item.name} className="w-20 h-24 object-cover bg-atelier-ink/5" />
                 <div>
                   <h3 className="font-serif italic text-lg">{item.name}</h3>
-                  {/* Display Bespoke Details */}
                   <div className="text-[9px] tracking-[0.2em] uppercase opacity-60 mt-2 space-y-1">
-                    {item.size && <p>Size: {item.size}</p>}
-                    {item.material && <p>Material: {item.material}</p>}
+                    {item.configuration?.size || item.size ? <p>Size: {item.configuration?.size || item.size}</p> : null}
+                    {item.configuration?.color || item.color ? <p>Colour: {item.configuration?.color || item.color}</p> : null}
+                    {item.configuration?.format || item.format ? <p>Format: {item.configuration?.format || item.format}</p> : null}
                     <p>Qty: {item.qty}</p>
                   </div>
                 </div>
-                <div className="ml-auto font-sans">
-                  ${item.price * item.qty}
+                <div className="ml-auto font-sans text-sm whitespace-nowrap">
+                  {createdOrder ? money(item.price * item.qty, orderCurrency) : `${item.qty} × ${money(item.price, "NGN")}`}
                 </div>
               </div>
             ))}
           </div>
 
-          {/* SHIPPING SUMMARY */}
-          <div className="bg-atelier-ink/5 p-6 text-[10px] tracking-widest uppercase">
-            <p className="font-bold mb-2">Shipping To:</p>
+          <div className="bg-atelier-ink/5 p-6 text-[10px] tracking-widest uppercase space-y-2">
+            <p className="font-bold mb-2">Delivering To: {customer.name}</p>
+            <p className="opacity-70">{customer.email} · {customer.phoneNumber}</p>
             <p className="opacity-70">{shippingAddress.addressLine1}</p>
-            <p className="opacity-70">
-              {shippingAddress.city}, {shippingAddress.postalCode}
-            </p>
+            <p className="opacity-70">{shippingAddress.city}{shippingAddress.state ? `, ${shippingAddress.state}` : ""} {shippingAddress.postalCode}</p>
             <p className="opacity-70">{shippingAddress.country}</p>
+            <Link to="/checkout" className="inline-block underline mt-3">Edit details</Link>
           </div>
-        </div>
+        </section>
 
-        {/* TOTALS & ACTIONS (Right Side) */}
-        <div className="border border-atelier-ink/10 p-8 h-fit sticky top-32">
-          <h2 className="text-[10px] tracking-[0.4em] uppercase font-bold mb-8">
-            Financial Summary
-          </h2>
-
-          <div className="space-y-4 font-sans text-sm mb-8 pb-8 border-b border-atelier-ink/10">
-            <div className="flex justify-between">
-              <span className="opacity-60">Subtotal</span>{" "}
-              <span>${itemsPrice.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="opacity-60">Shipping</span>{" "}
-              <span>${shippingPrice.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="opacity-60">Tax</span>{" "}
-              <span>${taxPrice.toFixed(2)}</span>
-            </div>
-          </div>
-
-          <div className="flex justify-between items-end mb-8">
-            <span className="text-[10px] tracking-[0.4em] uppercase font-bold">
-              Total
-            </span>
-            <span className="text-2xl font-serif italic">
-              ${totalPrice.toFixed(2)}
-            </span>
-          </div>
-
-          <div className="mt-8">
-            {!createdOrderId ? (
-              <button
-                onClick={handleCreateOrder}
-                disabled={isProcessing}
-                className="w-full bg-atelier-ink text-white py-4 text-[10px] tracking-[0.4em] uppercase font-bold disabled:opacity-50"
-              >
-                {isProcessing
-                  ? "Generating Order..."
-                  : "Confirm Commission Details"}
+        <aside className="border border-atelier-ink/10 p-8 h-fit md:sticky md:top-32">
+          <h2 className="text-[10px] tracking-[0.4em] uppercase font-bold mb-8">Order Summary</h2>
+          {!createdOrder ? (
+            <>
+              <div className="flex justify-between text-sm mb-4"><span className="opacity-60">Items</span><span>{itemCount}</span></div>
+              <div className="flex justify-between text-sm mb-8"><span className="opacity-60">Payment currency</span><span>{currency}</span></div>
+              <p className="text-xs leading-relaxed opacity-60 mb-8">Your final subtotal, delivery charge and any applicable tax will be calculated from the live catalogue and store settings when your order is created.</p>
+              <button onClick={handleCreateOrder} disabled={isCreating || loading} className="w-full bg-atelier-ink text-white py-4 text-[10px] tracking-[0.3em] uppercase font-bold disabled:opacity-50">
+                {isCreating || loading ? "Preparing Your Order…" : "Create Order & Continue"}
               </button>
-            ) : (
+              {error && <p role="alert" className="text-xs text-red-800 mt-4">{error}</p>}
+            </>
+          ) : (
+            <>
+              <div className="space-y-4 font-sans text-sm mb-8 pb-8 border-b border-atelier-ink/10">
+                <div className="flex justify-between"><span className="opacity-60">Subtotal</span><span>{money(createdOrder.itemsPrice, orderCurrency)}</span></div>
+                <div className="flex justify-between"><span className="opacity-60">Shipping</span><span>{money(createdOrder.shippingPrice, orderCurrency)}</span></div>
+                <div className="flex justify-between"><span className="opacity-60">Tax</span><span>{money(createdOrder.taxPrice, orderCurrency)}</span></div>
+              </div>
+              <div className="flex justify-between items-end mb-8">
+                <span className="text-[10px] tracking-[0.3em] uppercase font-bold">Total</span>
+                <span className="text-2xl font-serif italic">{money(createdOrder.totalPrice, orderCurrency)}</span>
+              </div>
+              <p className="text-[10px] tracking-widest uppercase opacity-50 mb-5">Order reference: {createdOrder._id}</p>
               <FlutterwaveButton
-                orderId={createdOrderId}
-                amount={totalPrice}
-                email={user?.email || user?.user?.email}
-                name={user?.name || user?.user?.name}
-                onSuccess={(res) => {
-                  clearCart();
-                  navigate(
-                    `/order/${createdOrderId}/success?transaction_id=${res.transaction_id}`,
-                  );
-                }}
-                onFailure={() => navigate("/payment-failed")}
+                payment={createdOrder.payment}
+                customer={customer}
+                onSuccess={handlePaymentSuccess}
+                onFailure={() => atelierToast("Flutterwave did not complete the payment. Your order is saved and you can retry.", "error")}
+                onClose={() => {}}
               />
-            )}
-          </div>
-        </div>
+            </>
+          )}
+        </aside>
       </div>
     </main>
   );

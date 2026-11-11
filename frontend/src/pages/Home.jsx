@@ -10,7 +10,7 @@ import useProductStore from "../store/useProductStore";
 const Home = () => {
    useSEO({
     title: "Home",
-    description: "The home of Africa's number one Commissioned Shoes and Menswear hub",
+    description: "Discover Olú The Maker: considered footwear, leather goods, menswear, bespoke commissions and stories shaped by craft.",
     ogImage: "https://res.cloudinary.com/ds78nckog/image/upload/v1785146735/IMG_0688_ny0nlp.png",
     ogType: "website",
   });
@@ -49,12 +49,17 @@ const Home = () => {
     <div className="bg-atelier-paper text-atelier-ink">
       {/* 1. HERO SECTION: THE LEAD STORY */}
       <section className="h-screen lg:min-h-[900px] xl:min-h-[1100px] relative overflow-hidden flex items-center">
-        <img
-          src={featuredBlog?.headerImage}
-          alt="Hero"
-          className="absolute inset-0 w-full h-full lg:h-[200vh] object-cover object-[50%_30%] lg:object-[50%_20%]"
-          style={{ objectPosition: "50% 20%" }}
-        />
+        {featuredBlog?.headerImage && (
+          <img
+            src={featuredBlog.headerImage}
+            alt={featuredBlog.title || "Olú The Maker editorial feature"}
+            fetchPriority="high"
+            loading="eager"
+            decoding="async"
+            className="absolute inset-0 w-full h-full lg:h-[200vh] object-cover object-[50%_30%] lg:object-[50%_20%]"
+            style={{ objectPosition: "50% 20%" }}
+          />
+        )}
         <div className="absolute inset-0 bg-atelier-ink/40" />
         <div className="relative z-10 px-6 md:px-12 w-full max-w-5xl">
           <span className="text-[10px] tracking-[0.5em] uppercase font-sans text-atelier-paper/80 block mb-6">
@@ -95,6 +100,8 @@ const Home = () => {
             <img
               src="https://res.cloudinary.com/ds78nckog/image/upload/v1778754634/moreimages_yhut1e.jpg"
               alt="Commissioned Shoes"
+              loading="lazy"
+              decoding="async"
               className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700"
             />
             <div className="absolute inset-0 border border-white/10 m-4 pointer-events-none z-10" />

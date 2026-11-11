@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   FiTwitter,
   FiFacebook,
@@ -69,14 +69,32 @@ const SingleBlogPost = () => {
   };
 
 
+  const articleStructuredData = useMemo(() => {
+    if (!currentBlog) return null;
+    return {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      headline: currentBlog.title,
+      description: currentBlog.description || currentBlog.excerpt,
+      image: currentBlog.headerImage ? [currentBlog.headerImage] : undefined,
+      datePublished: currentBlog.publishedAt ? new Date(currentBlog.publishedAt).toISOString() : undefined,
+      dateModified: currentBlog.updatedAt ? new Date(currentBlog.updatedAt).toISOString() : undefined,
+      author: { "@type": "Organization", name: currentBlog.author || "Olú The Maker" },
+      publisher: { "@type": "Organization", name: "Olú The Maker" },
+      mainEntityOfPage: `https://oluthemaker.com/journal/${currentBlog.slug}`,
+    };
+  }, [currentBlog]);
+
   useSEO({
     title: currentBlog?.title,
-    description: currentBlog?.excerpt,
+    description: currentBlog?.description || currentBlog?.excerpt,
     canonical: currentBlog
       ? `https://oluthemaker.com/journal/${currentBlog?.slug}`
       : undefined,
     ogImage: currentBlog?.headerImage,
     ogType: "article",
+    noIndex: !currentBlog && !loading,
+    structuredData: articleStructuredData,
   });
 
 
