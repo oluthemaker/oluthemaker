@@ -39,6 +39,7 @@ const Footwear = lazy(() => import("./pages/Footwear"));
 const Merchandise = lazy(() => import("./pages/Merchandise"));
 const Auctions = lazy(() => import("./pages/Auctions"));
 const LeatherGoods = lazy(() => import("./pages/LeatherGoods"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 //Footer Pages
 const About = lazy(() => import("./pages/footerpages/About"));
@@ -179,6 +180,9 @@ function App() {
               {/* 2. Dynamic Route Last (Catch-all for slugs) */}
               <Route path=":slug" element={<SingleBlogPost />} />
             </Route>
+
+            {/* Keep this catch-all route last so valid routes take priority. */}
+            <Route path="*" element={<NotFound />} />
           </Routes>
           </Suspense>
         </main>
